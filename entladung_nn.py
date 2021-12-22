@@ -12,7 +12,7 @@ import h5py
 from pathlib import Path
 from torch.utils import data
 import logging
-
+import matplotlib.pyplot as plt
 
 # Wrapping the dataset with load function
 class CustomDataset(data.Dataset):
@@ -47,17 +47,16 @@ class CustomDataset(data.Dataset):
                         if k < 3000:
                             for i in np.split(ds, 4):
                                 self.train_data_cache.append([label, torch.tensor(i).unsqueeze(0).type(torch.float32)])
-                                k += 1
+                            k += 1
                         elif j < 400:
                             for i in np.split(ds, 4):
                                 self.test_data_cache.append([label, torch.tensor(i).unsqueeze(0).type(torch.float32)])
-                                j += 1
+                            j += 1
                         elif l < 100:
                             for i in np.split(ds, 4):
                                 self.manual_data_cache.append([label, torch.tensor(i).unsqueeze(0).type(torch.float32)])
-                                l += 1
-
-                        if k > 3000 and j > 400:
+                            l += 1
+                        else:
                             break
 
     def __getitem__(self, index):
@@ -197,6 +196,20 @@ if __name__ == "__main__":
     test_dataloader = DataLoader(test_data, batch_size=64, shuffle=True, pin_memory=False, num_workers=4)
     manual_dataloader = DataLoader(customData.manual_data_cache, batch_size=4, shuffle=False, pin_memory=False, num_workers=4)
     #split_test_dataloader = DataLoader(split_test_data, batch_size=32, shuffle=True, pin_memory=False, num_workers=4)
+    train_array = np.array(train_data)
+    test_array = np.array(test_data)
+    test_counts = [0, 0, 0]
+    train_counts = [0, 0, 0]
+    for i in range(3):
+        train_counts[i] = np.count_nonzero([x[0] == i for x in train_array])
+        test_counts[i] = np.count_nonzero([x[0] == i for x in test_array])
+    plt.bar(range(3), test_counts)
+    plt.show()
+    plt.bar(range(3), train_counts)
+    plt.show()
+
+
+
 
     # training loop
     for epoch in range(100):  # loop over the dataset multiple times
