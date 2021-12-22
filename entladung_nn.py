@@ -48,11 +48,11 @@ class CustomDataset(data.Dataset):
                             for i in np.split(ds, 4):
                                 self.train_data_cache.append([label, torch.tensor(i).unsqueeze(0).type(torch.float32)])
                                 k += 1
-                        if j < 400:
+                        elif j < 400:
                             for i in np.split(ds, 4):
                                 self.test_data_cache.append([label, torch.tensor(i).unsqueeze(0).type(torch.float32)])
                                 j += 1
-                        if l < 100:
+                        elif l < 100:
                             for i in np.split(ds, 4):
                                 self.manual_data_cache.append([label, torch.tensor(i).unsqueeze(0).type(torch.float32)])
                                 l += 1
@@ -215,6 +215,6 @@ if __name__ == "__main__":
     for labels, inputs in manual_dataloader:
         inputs = inputs.to(device)
         labels = labels.to(device)
-        logging.debug(model(inputs), labels)
+        logging.debug(model(inputs) + labels)
 
     logging.debug('Finished Training')
