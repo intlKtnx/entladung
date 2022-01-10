@@ -64,7 +64,7 @@ class Datensatz(Enum):
 
 
 def toh5(file_path):
-    save_file = h5py.File("labeled_data.h5", mode="w")
+    save_file = h5py.File("labeled_data_512.h5", mode="w")
     grenzflaeche = save_file.create_group("grenzflaeche")
     spitze = save_file.create_group("spitze")
     referenz = save_file.create_group("referenz")
@@ -72,6 +72,8 @@ def toh5(file_path):
     files = p.glob('*.mat')
     i = 0
     top_db = 1
+    frame_length = 512
+    referenz_samples = 0
 
     for h5dataset_fp in files:
 
@@ -100,23 +102,22 @@ def toh5(file_path):
                                                                                 top_db=top_db, frame_length=512, hop_length=64)
                                         length = indices[1] - indices[0]
                                         if length < 1000:
-                                            sample_frame = group2[4][indices[0]+100:indices[0] + 1100]
-                                            padded_frame = np.pad(sample_frame, (0, max(0, 1000 - len(sample_frame))))
+                                            sample_frame = group2[4][indices[0]+100:indices[0] + frame_length + 100]
+                                            padded_frame = np.pad(sample_frame, (0, max(0, frame_length - len(sample_frame))))
                                             ax1.plot(range(len(trimmed)), group2[4][indices[0]:indices[1]])
 
-
-                                            groundtruth_frame = group2[2][indices[0]+100:indices[0] + 1100]
+                                            groundtruth_frame = group2[2][indices[0]+100:indices[0] + frame_length + 100]
                                             groundtruth_padded = np.pad(groundtruth_frame,
-                                                                        (0, max(0, 1000 - len(groundtruth_frame))))
+                                                                        (0, max(0, frame_length - len(groundtruth_frame))))
                                             ax2.plot(range(len(trimmed)), trimmed)
                                             sample_sum += 1
 
                                             leading_silence = np.array(group2[4][:indices[0]+100])
                                             leading_silence = np.array_split(leading_silence,
-                                                                             max(1, np.ceil(len(leading_silence)/1000)))
-                                            trailing_silence = np.array(group2[4][indices[0]+1100:])
+                                                                             max(1, np.ceil(len(leading_silence)/frame_length)))
+                                            trailing_silence = np.array(group2[4][indices[0]+frame_length:])
                                             trailing_silence = np.array_split(trailing_silence,
-                                                                              max(1, np.ceil(len(trailing_silence)/1000)))
+                                                                              max(1, np.ceil(len(trailing_silence)/frame_length)))
                                             
                                             if i == 1:
                                                 grenzflaeche.create_dataset(f"{samplename}_{i}", data=padded_frame)
@@ -125,12 +126,16 @@ def toh5(file_path):
                                                 spitze.create_dataset(f"{samplename}_{i}", data=padded_frame)
                                                 spitze_sum += 1
                                             for j, data in enumerate(leading_silence):
-                                                data = np.pad(data, (0, 1000-len(data)))
-                                                referenz.create_dataset(name=f"{samplename}_{j}_{i}", data=data)
+                                                if referenz_samples < 3000:
+                                                    data = np.pad(data, (0, frame_length-len(data)))
+                                                    referenz.create_dataset(name=f"{samplename}_{j}_{i}", data=data)
+                                                    referenz_samples += 1
                                                 referenz_sum += 1
                                             for k, data in enumerate(trailing_silence):
-                                                data = np.pad(data, (0, 1000 - len(data)))
-                                                referenz.create_dataset(name=f"{samplename}_0{k}_{i}", data=data)
+                                                if referenz_samples < 6000:
+                                                    data = np.pad(data, (0, frame_length - len(data)))
+                                                    referenz.create_dataset(name=f"{samplename}_0{k}_{i}", data=data)
+                                                    referenz_samples += 1
                                                 referenz_sum += 1
 
                         logging.info(sample_sum)

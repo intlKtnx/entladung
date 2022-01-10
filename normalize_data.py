@@ -7,10 +7,10 @@ from tqdm import tqdm
 
 def normalize(file_path):
     p = Path(file_path)
-    files = p.glob('labeled_data.h5')
+    files = p.glob('labeled_data_512.h5')
     maximum = 0
     minimum = 0
-    save_file = h5py.File("normalized_labeled_data.h5", mode="w")
+    save_file = h5py.File("normalized_labeled_data_512.h5", mode="w")
     grenzflaeche = save_file.create_group("grenzflaeche")
     spitze = save_file.create_group("spitze")
     referenz = save_file.create_group("referenz")
