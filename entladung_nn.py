@@ -12,15 +12,16 @@ import h5py
 from pathlib import Path
 from torch.utils import data
 import logging
-from datetime import datetime
 from collections import Counter
 from sklearn.metrics import confusion_matrix,  ConfusionMatrixDisplay
 import pandas as pd
+import sys
+import datetime
 
 
 # Wrapping the dataset with load function
 class CustomDataset(data.Dataset):
-    def __init__(self, file_path, transform=None):
+    def __init__(self, file_path, pattern="normalized*512*.h5",  transform=None):
         super().__init__()
         self.train_data_cache = []
         self.test_data_cache = []
@@ -30,7 +31,7 @@ class CustomDataset(data.Dataset):
         self.label_count = [0, 0, 0]
         # Search for all h5 files
         p = Path(file_path)
-        files = p.glob('normalized*512.h5')
+        files = p.glob(pattern)
         logging.debug(files)
         for h5dataset_fp in files:
             logging.debug(h5dataset_fp)
@@ -227,13 +228,22 @@ def train_model(epochs, optimizer, criterion, model, device):
     return CM, (train_loss_values, test_loss_values)
 
 
-def display_confusion_matrix(confusion_matrix):
+def display_confusion_matrix(confusion_matrix,):
     display = ConfusionMatrixDisplay(confusion_matrix=confusion_matrix[0], display_labels=[0, 1, 2])
     display.plot()
     plt.show()
     display = ConfusionMatrixDisplay(confusion_matrix=confusion_matrix[1], display_labels=[0, 1, 2])
     display.plot()
     plt.show()
+
+
+def save_confusion_matrix(confusion_matrix, save_dir):
+    display = ConfusionMatrixDisplay(confusion_matrix=confusion_matrix[0], display_labels=[0, 1, 2])
+    display.plot()
+    plt.savefig(f"{save_dir}/{datetime.datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}_cm0.png")
+    display = ConfusionMatrixDisplay(confusion_matrix=confusion_matrix[1], display_labels=[0, 1, 2])
+    display.plot()
+    plt.savefig(f"{save_dir}/{datetime.datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}_cm1.png")
 
 
 def save_seed():
@@ -244,8 +254,16 @@ def save_seed():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
+
+    arguments = sys.argv
+    logging.info(arguments)
+    path = arguments[1]
+    pattern = arguments[2]
+    save_dir = arguments[3]
+
     # loading the data
-    customData = CustomDataset("/home/marcus/Dokumente/entladung/")
+
+    customData = CustomDataset(path, pattern)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     logging.info('Using {} device'.format(device))
     model = Network().to(device)
@@ -264,7 +282,8 @@ if __name__ == "__main__":
     manual_dataloader = DataLoader(customData.manual_data_cache, batch_size=4, shuffle=False, pin_memory=False, num_workers=0)
     # torch.save(model.state_dict(), "/home/marcus/Dokumente/entladung/best_model")
     confusion_matrix, loss_values = train_model(60, optimizer, criterion, model, device)
-    display_confusion_matrix(confusion_matrix)
-    plt.plot(range(len(loss_values[0])), loss_values[0])
-    plt.plot(range(len(loss_values[1])), loss_values[1])
-    plt.show()
+    save_confusion_matrix(confusion_matrix, save_dir)
+    plt.plot(loss_values[0])
+    plt.plot(loss_values[1])
+    plt.savefig(f"{save_dir}/{datetime.datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}_loss.png")
+
