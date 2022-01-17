@@ -1,4 +1,6 @@
-
+from pathlib import Path
+import matplotlib.pyplot as plt
+import librosa
 import torch
 import numpy as np
 from torch.utils.data import DataLoader
@@ -10,7 +12,11 @@ import h5py
 from pathlib import Path
 from torch.utils import data
 import logging
-import matplotlib.pyplot as plt
+from datetime import datetime
+from collections import Counter
+from sklearn.metrics import confusion_matrix,  ConfusionMatrixDisplay
+import pandas as pd
+
 
 # Wrapping the dataset with load function
 class CustomDataset(data.Dataset):
@@ -19,11 +25,12 @@ class CustomDataset(data.Dataset):
         self.train_data_cache = []
         self.test_data_cache = []
         self.manual_data_cache = []
+        self.full_test_data_cache = []
         self.transform = transform
         self.label_count = [0, 0, 0]
         # Search for all h5 files
         p = Path(file_path)
-        files = p.glob('*.h5')
+        files = p.glob('normalized*512.h5')
         logging.debug(files)
         for h5dataset_fp in files:
             logging.debug(h5dataset_fp)
@@ -43,18 +50,19 @@ class CustomDataset(data.Dataset):
                     logging.debug(group.items())
                     for dname, ds in tqdm(group.items()):
                         if k < 3000:
-                            for i in np.split(ds, 4):
+                            for i in np.split(ds, 2):
                                 self.train_data_cache.append([label, torch.tensor(i).unsqueeze(0).type(torch.float32)])
                             k += 1
                         elif j < 400:
-                            for i in np.split(ds, 4):
+                            self.full_test_data_cache.append([label, ds])
+                            for i in np.split(ds, 2):
                                 self.test_data_cache.append([label, torch.tensor(i).unsqueeze(0).type(torch.float32)])
                             j += 1
                         elif l < 100:
-                            for i in np.split(ds, 4):
+                            for i in np.split(ds, 2):
                                 self.manual_data_cache.append([label, torch.tensor(i).unsqueeze(0).type(torch.float32)])
                             l += 1
-                        else:
+                        if k == 3000 and j == 400 and l == 100:
                             break
 
     def __getitem__(self, index):
@@ -74,21 +82,21 @@ class CustomDataset(data.Dataset):
 class Network(nn.Module):
     def __init__(self):
         super(Network, self).__init__()
-        self.conv1 = nn.Conv1d(1, 16, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv1d(16, 32, kernel_size=3, padding=1)
-        self.conv3 = nn.Conv1d(32, 64, kernel_size=3, padding=1)
-        self.conv4 = nn.Conv1d(64, 128, kernel_size=3, padding=1)  # endsize 1536 maxpool 3
-        # self.conv5 = nn.Conv1d(128, 256, kernel_size=3, padding=1) #endsize 1024 maxpool 3
+        self.conv1 = nn.Conv1d(1, 2, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv1d(2, 4, kernel_size=3, padding=1)
+        self.conv3 = nn.Conv1d(4, 8, kernel_size=3, padding=1)
+        self.conv4 = nn.Conv1d(8, 16, kernel_size=3, padding=1)# endsize 1536 maxpool 3
+        #self.conv5 = nn.Conv1d(16, 32, kernel_size=3, padding=1) #endsize 1024 maxpool 3
         # self.conv6 = nn.Conv1d(256, 512, kernel_size=3, padding=1) # endsize 512 maxpool 3
 
-        self.fc1 = nn.Linear(384, 3)
+        self.fc1 = nn.Linear(112, 3) #input 1000 / 4 384//8
 
     def forward(self, x):
-        x = F.max_pool1d(F.relu(self.conv1(x)), 3)
-        x = F.max_pool1d(F.relu(self.conv2(x)), 3)
+        x = F.max_pool1d(F.relu(self.conv1(x)), 2)
+        x = F.max_pool1d(F.relu(self.conv2(x)), 2)
         x = F.max_pool1d(F.relu(self.conv3(x)), 3)
         x = F.max_pool1d(F.relu(self.conv4(x)), 3)
-        # x = F.max_pool1d(F.relu(self.conv5(x)),3)
+        #x = F.max_pool1d(F.relu(self.conv5(x)), 4)
         # x = F.max_pool1d(F.relu(self.conv6(x)),3)
         #logging.debug(x.shape)
         x = torch.flatten(x, 1)
@@ -99,11 +107,13 @@ class Network(nn.Module):
 
 
 # the train loop
-def train(dataloader, optimizer, criterion, model):
+def train(dataloader, optimizer, criterion, model, device):
     model.train()
     running_loss = 0.0
     j = 0
+    loss_values = []
     for i, data in enumerate(train_dataloader, 0):
+
         # get the inputs; data is a list of [labels, inputs]
 
         inputs = data[1]
@@ -116,20 +126,24 @@ def train(dataloader, optimizer, criterion, model):
         # forward + backward + optimize
         outputs = model(inputs)
         loss = criterion(outputs, labels)
+        loss_values.append(loss.item())
         loss.backward()
         optimizer.step()
-
-        # log statistics
         running_loss += loss.item()
-        if i % 500 == 499:
-            logging.debug(f"[{epoch}]Loss: {running_loss / 500} ")
+
+    return running_loss / (i + 1)
 
 
 # testing the accuracy on single 1024 snippets
-def split_test(dataloader, optimizer, criterion, model):
+def split_test(dataloader,criterion, model, device):
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
     model.eval()
+    ACC = []
+    true = []
+    pred = []
+    right_pred = []
+    wrong_pred = []
     test_loss, correct = 0, 0
     with torch.no_grad():
         for labels, inputs in dataloader:
@@ -137,49 +151,103 @@ def split_test(dataloader, optimizer, criterion, model):
             outputs = model(inputs)
             loss = criterion(outputs, labels)
             test_loss += loss.item()
+            ACC.append((torch.argmax(outputs,axis=1)==labels).float().mean().item())
+            pred.extend(list((torch.argmax(outputs,axis=1).cpu().numpy())))
+            true.extend(list(labels.cpu().numpy()))
             correct += (outputs.argmax(1) == labels).type(torch.float).sum().item()
+            """
+            for i, output in enumerate(outputs):
+                if output.argmax(0) != labels[i]:
+                    wrong_pred.append([inputs[i], labels[i], output])
+                elif output.argmax(0) == labels[i]:
+                    right_pred.append([inputs[i], labels[i], output])
+            """
     test_loss /= num_batches
     correct /= size
-    logging.debug(f" Random Teilstück Error: Accuracy: {(100 * correct):>0.1f}%, Avg loss: {test_loss:>8f}")
+    logging.info(f"Acc: {(100 * correct):>0.1f}%, test loss: {test_loss:>8f}")
+    return (confusion_matrix(true, pred), confusion_matrix(true, pred, normalize='true')), test_loss
 
 
-# testing the accuracy on whole samples via majority vote
 def test_complete(dataloader, optimizer, criterion, model):
     model.eval()
     num_batches = len(dataloader)
     size = len(dataloader.dataset)
     correct = 0
+    ACC = []
+    true = []
+    pred = []
     with torch.no_grad():
         for labels, inputs in dataloader:
             labels = labels.to(device)
             outputs = np.array([])
             for sample in inputs:
-                split_input = torch.reshape(sample, (300, 1024)).unsqueeze(1).to(device)
-                split_input = split_input[split_input.sum(dim=2) != 0].unsqueeze(1)
-                split_output = model(split_input)
-                answer_count = np.array([0, 0, 0, 0, 0, 0, 0])
-                for i in split_output:
+                #splitted_input = torch.reshape(sample, (4, 250)).unsqueeze(0).to(device)
+                splitted_input
+                splitted_output = model(splitted_input)
+                answer_count = np.array([0,0,0])
+                for i in splitted_output:
                     answer_count[i.argmax(0)] += 1
+                #print(answer_count, answer_count.sum())
                 outputs = np.append(outputs, answer_count.argmax(0))
+                ACC.append((torch.argmax(outputs,axis=1)==labels).float().mean().item())
+                pred.extend(list((torch.argmax(outputs,axis=1).cpu().numpy())))
+                true.extend(list(labels.cpu().numpy()))
             for i in range(len(outputs)):
                 if outputs[i] == labels[i]:
                     correct += 1
+            #correct += (outputs == labels).type(torch.float).sum().item()
     correct /= size
+    print(f"Full Sample Error: Accuracy: {(100*correct):>0.1f}%")
+    return confusion_matrix(true, pred), confusion_matrix(true, pred, normalize='true')
 
-    logging.debug(f"Full Sample Error: Accuracy: {(100 * correct):>0.1f}%")
+
+def get_total_params(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+
+def show_key_distribution(data):
+    cache = []
+    for i, val in enumerate(data):
+        cache.append(test_data[i][0])
+    return Counter(cache).keys(), Counter(cache).values()
+
+
+# training loop
+def train_model(epochs, optimizer, criterion, model, device):
+    test_loss_values = []
+    train_loss_values = []
+    logging.info(get_total_params(model))
+    for epoch in range(epochs):  # loop over the dataset multiple times
+        train_loss= train(train_dataloader, optimizer, criterion, model, device)
+        logging.info(f"[{epoch}] Train Loss: {train_loss}")
+        CM, test_loss = split_test(test_dataloader, criterion, model, device)
+        test_loss_values.append(test_loss)
+        train_loss_values.append(train_loss)
+    logging.info('Finished Training')
+    return CM, (train_loss_values, test_loss_values)
+
+
+def display_confusion_matrix(confusion_matrix):
+    display = ConfusionMatrixDisplay(confusion_matrix=confusion_matrix[0], display_labels=[0, 1, 2])
+    display.plot()
+    plt.show()
+    display = ConfusionMatrixDisplay(confusion_matrix=confusion_matrix[1], display_labels=[0, 1, 2])
+    display.plot()
+    plt.show()
+
+
+def save_seed():
+    seed = np.random.get_state()
+    df = pd.DataFrame(data = seed[1])
+    df.to_csv("entladung_randomseed3.csv")
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-
-    # looking for cuda device and selecting it if possible
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    logging.debug('Using {} device'.format(device))
-
+    logging.basicConfig(level=logging.INFO)
     # loading the data
     customData = CustomDataset("/home/marcus/Dokumente/entladung/")
-
-    # defining the model and moving it to the correct device
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    logging.info('Using {} device'.format(device))
     model = Network().to(device)
 
     # defining loss and optimizer
@@ -189,43 +257,14 @@ if __name__ == "__main__":
     # defining train and test sets
     train_data = customData.get_train_data()
     test_data = customData.get_test_data()
-    #split_test_data = customData.split_test_data_cache
-    train_dataloader = DataLoader(train_data, batch_size=256, shuffle=True, pin_memory=False, num_workers=4)
-    test_dataloader = DataLoader(test_data, batch_size=64, shuffle=True, pin_memory=False, num_workers=4)
-    manual_dataloader = DataLoader(customData.manual_data_cache, batch_size=4, shuffle=False, pin_memory=False, num_workers=4)
-    #split_test_dataloader = DataLoader(split_test_data, batch_size=32, shuffle=True, pin_memory=False, num_workers=4)
-    train_array = np.array(train_data)
-    test_array = np.array(test_data)
-    test_counts = [0, 0, 0]
-    train_counts = [0, 0, 0]
-    for i in range(3):
-        train_counts[i] = np.count_nonzero([x[0] == i for x in train_array])
-        test_counts[i] = np.count_nonzero([x[0] == i for x in test_array])
-    plt.bar(range(3), test_counts)
+    full_test_data = customData.full_test_data_cache
+    full_test_data = DataLoader(full_test_data, batch_size=64, shuffle=True, pin_memory=False, num_workers=0)
+    train_dataloader = DataLoader(train_data, batch_size=256, shuffle=True, pin_memory=False, num_workers=0)
+    test_dataloader = DataLoader(test_data, batch_size=64, shuffle=True, pin_memory=False, num_workers=0)
+    manual_dataloader = DataLoader(customData.manual_data_cache, batch_size=4, shuffle=False, pin_memory=False, num_workers=0)
+    # torch.save(model.state_dict(), "/home/marcus/Dokumente/entladung/best_model")
+    confusion_matrix, loss_values = train_model(60, optimizer, criterion, model, device)
+    display_confusion_matrix(confusion_matrix)
+    plt.plot(range(len(loss_values[0])), loss_values[0])
+    plt.plot(range(len(loss_values[1])), loss_values[1])
     plt.show()
-    plt.bar(range(3), train_counts)
-    plt.show()
-
-
-
-
-    # training loop
-    for epoch in range(100):  # loop over the dataset multiple times
-        train(train_dataloader, optimizer, criterion, model)
-        split_test(test_dataloader, optimizer, criterion, model)
-        #test_complete(test_dataloader, optimizer, criterion, model)
-
-        if epoch % 10 == 9:
-            torch.save({'epoch': epoch,
-                        'model_state_dict': model.state_dict(),
-                        'optimizer_state_dict': optimizer.state_dict(),
-                        'loss': criterion,
-                        }, f"/home/marcus/Dokumente/munzwurf/model{epoch + 1}.tar")
-
-    model.eval()
-    for labels, inputs in manual_dataloader:
-        inputs = inputs.to(device)
-        labels = labels.to(device)
-        logging.debug(model(inputs) + labels)
-
-    logging.debug('Finished Training')
