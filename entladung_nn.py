@@ -281,6 +281,7 @@ if __name__ == "__main__":
     # torch.save(model.state_dict(), "/home/marcus/Dokumente/entladung/best_model")
     confusion_matrix, loss_values = train_model(60, optimizer, criterion, model, device)
     save_confusion_matrix(confusion_matrix, save_dir)
+    plt.clf()
     plt.plot(loss_values[0])
     plt.plot(loss_values[1])
     plt.savefig(f"{save_dir}/{datetime.datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}_loss.png")
