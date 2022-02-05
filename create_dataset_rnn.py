@@ -6,6 +6,7 @@ import numpy as np
 from tqdm import tqdm
 import librosa
 from enum import Enum
+from string import ascii_lowercase,ascii_uppercase, digits
 
 ugly_samples1 = ['0y', '2P', '2R', '3w', '88', '97', '9m', 'DD', 'Dv', 'Ex', 'FQ', 'I8', 'IA', 'JQ', 'PA', 'Qy', 'S7',
                  'Tbb', 'Tf', 'Up', 'VT', 'WB', 'WT', 'WW', 'Wf', 'Zi', 'ag', 'cn', 'f3', 'fl', 'fu', 'ih', 'jf', 'k',
@@ -64,51 +65,91 @@ class Datensatz(Enum):
     SPITZE = 2
 
 
-def toh5(file_path):
-    save_file = h5py.File("rnn_data.h5", mode="w")
-    grenzflaeche = save_file.create_group("grenzflaeche")
-    spitze = save_file.create_group("spitze")
+def neg_data_toh5(file_path, save_file):
+    neg_grenzflache = save_file.create_group("neg_grenzflaeche")
+    neg_spitze = save_file.create_group("neg_spitze")
     p = Path(file_path)
-    files = p.glob('*.mat')
+    files = p.glob('*neg*.mat')
     i = 0
-    top_db = 1
-    frame_length = 512
-    referenz_samples = 0
 
-    for h5dataset_fp in files:
 
-        i += 1
-        with h5py.File(h5dataset_fp.resolve()) as h5_file:
+    for h5_dataset_fp in files:
+        with h5py.File(h5_dataset_fp.resolve()) as h5_file:
+            #logging.info("Spitze" in str(h5_dataset_fp))
+            if "Spitze" in str(h5_dataset_fp):
+                datensatz_name = "ohne"
+            else:
+                datensatz_name = "mit"
+            logging.info(str(h5_dataset_fp))
             for gname, group in h5_file.items():
-                if True:
-                    if isinstance(group, h5py.Group):
-                        sample_sum = 0
-                        referenz_sum = 0
-                        spitze_sum = 0
-                        grenzflaeche_sum = 0
-                        fig1 = plt.figure()
-                        ax1 = fig1.add_subplot(title=f"ton librosa äquivalent {Datensatz(i).name} mit top_db={top_db}")
-                        fig2 = plt.figure()
-                        ax2 = fig2.add_subplot(title=f"groundtruth librosa {Datensatz(i).name} mit top_db={top_db}")
-                        ugly_samples = []
-                        for samplename, group2 in tqdm(group.items()):
-                            if gname == '#refs#':
-                                if not len(group2) == 5:
-                                    continue
-                                else:
-                                    if isinstance(group2[2], np.ndarray):
-                                        if i == 1:
-                                            grenzflaeche.create_dataset(name=f"{samplename}_{i}", data=group2[2])
-                                            grenzflaeche_sum += 1
-                                        if i == 2:
-                                            spitze.create_dataset(name=f"{samplename}_{i}", data=group2[2])
-                                            spitze_sum += 1
-                        logging.info(sample_sum)
-                        logging.info(f"grenzfläche:{grenzflaeche_sum}, spitze:{spitze_sum}")
-                        break
+                if isinstance(group, h5py.Group):
+                    sample_sum = 0
+                    neg_grenzflache_sum = 0
+                    neg_spitze_sum = 0
+                    for samplename, group2 in tqdm(group.items()):
+                        if gname == '#refs#':
+                            if not len(group2) == 5:
+                                continue
+                            else:
+                                if isinstance(group2[2], np.ndarray):
+                                    #logging.info(f"{samplename}_{datensatz_name}")
+                                    if datensatz_name == "mit":
+                                        neg_grenzflache.create_dataset(name=f"{samplename}_{datensatz_name}", data=group2[2])
+                                        neg_grenzflache_sum += 1
+                                    elif datensatz_name == "ohne":
+                                        neg_spitze.create_dataset(name=f"{samplename}_{datensatz_name}", data=group2[2])
+                                        neg_spitze_sum += 1
+    logging.info(sample_sum)
+    logging.info(f"neg_grenzfläche:{neg_grenzflache_sum}, "
+                 f"neg_spitze:{neg_spitze_sum}")
+
+
+def pos_data_toh5(file_path, save_file):
+    p = Path(file_path)
+    pos_grenzflaeche = save_file.create_group("pos_grenzflaeche")
+    pos_spitze = save_file.create_group("pos_spitze")
+    files = p.glob("*pos*.mat")
+    letters = ascii_uppercase + ascii_lowercase
+    for h5_dataset_fp in files:
+        with h5py.File(h5_dataset_fp) as h5_file:
+            logging.info(str(h5_dataset_fp))
+            if "ohne" in str(h5_dataset_fp):
+                datensatz_name = "ohne"
+                laenge = 3000
+            else:
+                datensatz_name = "mit"
+                laenge = 3500
+            data_one_dimension = None
+            pos_grenzflaeche_sum = 0
+            pos_spitze_sum = 0
+            for gname, group in h5_file.items():
+                data = np.array(np.reshape(group[4], (1, laenge, 20002)))
+                if data_one_dimension is None:
+                        data_one_dimension = data
+                else:
+                    data_one_dimension = np.concatenate(data_one_dimension, data, axis=0)
+                letters = ascii_uppercase + ascii_lowercase
+            for i in tqdm(range(laenge)):
+                digit1 = i % len(letters)
+                digit2 = int(((i - digit1) / len(letters)) % len(letters))
+                digit3 = int(((i - (digit1 + digit2 * len(letters))) / (len(letters)**2)) % len(letters))
+                index = letters[digit3] + letters[digit2] + letters[digit1]
+                #logging.info(index)
+                if datensatz_name == "mit":
+                    pos_grenzflaeche.create_dataset(name=f"{index}_{datensatz_name}", data=data_one_dimension[0, i, :])
+                    pos_grenzflaeche_sum += 1
+                elif datensatz_name == "ohne":
+                    pos_spitze.create_dataset(name=f"{index}_{datensatz_name}", data=data_one_dimension[0, i, :])
+                    pos_spitze_sum += 1
+
+
+def toh5(file_path, save_file):
+    save_file = h5py.File(save_file, mode="w")
+    pos_data_toh5(file_path, save_file)
+    neg_data_toh5(file_path, save_file)
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    toh5("/home/marcus/Dokumente/entladung/data")
+    toh5("/home/marcus/Dokumente/entladung/data", "rnn_data.h5")
 
