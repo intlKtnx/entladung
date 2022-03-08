@@ -9,12 +9,15 @@ from string import ascii_lowercase,ascii_uppercase, digits
 
 def check_data(file_path):
     p = Path(file_path)
-    files = p.glob("*pos*ohne*.mat")
+    files = p.glob("*pos*_G*.mat")
     for h5_dataset_fp in files:
         with h5py.File(h5_dataset_fp) as h5_file:
             logging.info(str(h5_dataset_fp))
             for gname, group in h5_file.items():
-                print(gname)
+                for i in range(5):
+                    for j in tqdm(np.split(group[i], 3500)):
+                        plt.plot(j)
+                    plt.show()
 
 
 

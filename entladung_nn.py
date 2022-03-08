@@ -15,6 +15,7 @@ from sklearn.metrics import confusion_matrix,  ConfusionMatrixDisplay
 import pandas as pd
 import sys
 import datetime
+import plotly.express as px
 
 
 # Wrapping the dataset with load function
