@@ -243,6 +243,7 @@ def training_loop(epochs, optimizer, criterion, model, train_dataloader, test_da
         test_accuracy.append(test_accuracy_current)
     logging.info('Finished Training')
 
+    """
     # plotting loss
     plt.plot(train_loss)
     plt.plot(test_loss)
@@ -259,6 +260,7 @@ def training_loop(epochs, optimizer, criterion, model, train_dataloader, test_da
     disp = ConfusionMatrixDisplay(confusion_matrix=confusion_matrix_normalized, display_labels=[0, 1, 2, 3])
     disp.plot()
     plt.show()
+    """
 
     return test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
            wrong_predictions, right_predictions
