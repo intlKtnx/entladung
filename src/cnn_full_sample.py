@@ -1,4 +1,3 @@
-from pathlib import Path
 import matplotlib.pyplot as plt
 import torch
 import numpy
@@ -12,11 +11,9 @@ from pathlib import Path
 from torch.utils import data
 import logging
 from datetime import datetime
-from collections import Counter
 from sklearn.metrics import confusion_matrix,  ConfusionMatrixDisplay
 import pandas
 import random
-import os
 import sys
 
 
@@ -40,7 +37,7 @@ def seed_worker(worker_id):
 
 
 class CustomDataset(data.Dataset):
-    def __init__(self, file_path, pattern,transform=None):
+    def __init__(self, file_path, pattern, transform=None):
         super().__init__()
         self.train_data_cache = []
         self.test_data_cache = []
@@ -134,7 +131,7 @@ class Network(nn.Module):
         return x
 
 
-def train(dataloader, optimizer, criterion, model, epoch):
+def train(dataloader, optimizer, criterion, model, epoch, device):
     model.train()
     size = len(dataloader.dataset)
     running_loss = 0.0
@@ -165,7 +162,7 @@ def train(dataloader, optimizer, criterion, model, epoch):
     return running_loss / (i + 1), correct * 100
 
 
-def test(dataloader, criterion, model, epoch):
+def test(dataloader, criterion, model, epoch, device):
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
     model.eval()
@@ -197,7 +194,7 @@ def test(dataloader, criterion, model, epoch):
            test_loss, 100*correct
 
 
-def validation(dataloader):
+def validation(dataloader, model, criterion, device):
     acc = []
     pred = []
     true = []
@@ -228,7 +225,7 @@ def validation(dataloader):
     return correct * 100, validation_loss
 
 
-def training_loop(epochs, optimizer, criterion, model, train_dataloader, test_dataloader):
+def training_loop(epochs, optimizer, criterion, model, train_dataloader, test_dataloader, device):
 
     test_loss = []
     test_accuracy = []
@@ -237,11 +234,11 @@ def training_loop(epochs, optimizer, criterion, model, train_dataloader, test_da
 
     # training the model
     for epoch in range(epochs):  # loop over the dataset multiple times
-        train_loss_current, train_accuracy_current = train(train_dataloader, optimizer, criterion, model, epoch)
+        train_loss_current, train_accuracy_current = train(train_dataloader, optimizer, criterion, model, epoch, device)
         train_loss.append(train_loss_current)
         train_accuracy.append(train_accuracy_current)
         confusion_matrix_raw, confusion_matrix_normalized, wrong_predictions, right_predictions, \
-            test_loss_current, test_accuracy_current = test(test_dataloader, criterion, model, epoch)
+            test_loss_current, test_accuracy_current = test(test_dataloader, criterion, model, epoch, device)
         test_loss.append(test_loss_current)
         test_accuracy.append(test_accuracy_current)
     logging.info('Finished Training')
@@ -271,25 +268,14 @@ def total_params(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-
-    # setting hyperparameters
-    epochs = 75
-    stride = 1
-    padding = 1
-    kernel_size = 3
-    pool_size = 3
-    dilation = 1
-    conv_factor = 2
+def network_training(epochs, stride, padding, kernel_size, pool_size, dilation, conv_factor, data_path, pattern):
 
     # setting the gpu
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     logging.info('Using {} device'.format(device))
 
     # initializing dataset
-    data_path = "/home/marcus/Dokumente/entladung/modified_data"
-    pattern = 'normalize*.h5'
+
     customData = CustomDataset(data_path, pattern)
 
     test_loss_array = []
@@ -332,9 +318,9 @@ if __name__ == "__main__":
 
         # training the network
         test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, wrong_predictions, right_predictions \
-            = training_loop(epochs, optimizer, criterion, model, train_dataloader, test_dataloader)
+            = training_loop(epochs, optimizer, criterion, model, train_dataloader, test_dataloader, device)
 
-        validation_accuracy, validation_loss = validation(validation_dataloader)
+        validation_accuracy, validation_loss = validation(validation_dataloader, model, criterion, device)
 
         test_loss_array.append(test_loss)
         test_accuracy_array.append(test_loss)
@@ -352,7 +338,7 @@ if __name__ == "__main__":
         validation_accuracy_array.append(validation_accuracy)
 
     metrics = pandas.DataFrame({
-        'parameters': total_params,
+        'parameters': total_parameters,
         'epochs': epochs,
         'stride': stride,
         'padding': padding,
@@ -362,12 +348,40 @@ if __name__ == "__main__":
         'conv_factor': conv_factor,
 
         'test_loss': test_loss_array,
+        'test_accuracy': test_accuracy_array,
         'train_loss': train_loss_array,
+        'train_accuracy': train_accuracy_array,
         'confusion_matrix': confusion_matrix_raw_array,
         'confusion_matrix_normalized': confusion_matrix_normalized_array,
-        'validation_loss': validation_loss_array
-
+        'validation_loss': validation_loss_array,
+        'validation_accuracy': validation_accuracy_array
     })
 
-    save_path = "/home/marcus/Dokumente/entladung/"
-    metrics.to_csv(f"{save_path}network_metrics_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
+    return metrics
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+
+    # home_path = "/home/marcus/Dokumente/entladung/"
+    #data_path = "/home/marcus/Dokumente/entladung/modified_data"
+    #pattern = 'normalize*.h5'
+
+    arguments = sys.argv
+    logging.info(arguments)
+
+    path = arguments[1]
+    pattern = arguments[2]
+    save_dir = arguments[3]
+
+    # setting hyperparameters
+    epochs = 100
+    padding = 1
+    kernel_size = 3
+    pool_size = 3
+    dilation = 1
+    conv_factor = 2
+
+    for stride in range(4, 5):
+        results = network_training(epochs, stride, padding, kernel_size, pool_size, dilation, conv_factor, path, pattern)
+        results.to_csv(f"{save_dir}_stride{stride}_network_metrics_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
