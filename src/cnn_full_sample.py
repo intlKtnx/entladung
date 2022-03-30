@@ -325,7 +325,7 @@ def network_training(epochs, stride, padding, kernel_size, pool_size, dilation, 
         validation_accuracy, validation_loss = validation(validation_dataloader, model, criterion, device)
 
         test_loss_array.append(test_loss)
-        test_accuracy_array.append(test_loss)
+        test_accuracy_array.append(test_accuracy)
 
         train_loss_array.append(train_loss)
         train_accuracy_array.append(train_accuracy)
@@ -385,6 +385,6 @@ if __name__ == "__main__":
     conv_factor = 2
     stride = 4
 
-    for kernel_size in range(2, 10):
+    for kernel_size in range(4, 6):
         results = network_training(epochs, stride, padding, kernel_size, pool_size, dilation, conv_factor, path, pattern)
-        results.to_csv(f"{save_dir}_stride{stride}_network_metrics_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
+        results.to_csv(f"{save_dir}kernel_size{kernel_size}_network_metrics_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
