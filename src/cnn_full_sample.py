@@ -158,7 +158,7 @@ def train(dataloader, optimizer, criterion, model, epoch, device):
         # log statistics
         running_loss += loss.item()
     correct /= size
-    logging.info(f"[{epoch}] Train Loss: {running_loss / (i + 1):>8f}, Train accuracy: {correct * 100:>0.1f}% ")
+    # logging.info(f"[{epoch}] Train Loss: {running_loss / (i + 1):>8f}, Train accuracy: {correct * 100:>0.1f}% ")
     return running_loss / (i + 1), correct * 100
 
 
@@ -189,7 +189,7 @@ def test(dataloader, criterion, model, epoch, device):
                     right_pred.append([inputs[i], labels[i], output])
     test_loss /= num_batches
     correct /= size
-    logging.info(f" Random Teilstück Error: Accuracy: {(100 * correct):>0.1f}%, Avg loss: {test_loss:>8f}")
+    # logging.info(f" Random Teilstück Error: Accuracy: {(100 * correct):>0.1f}%, Avg loss: {test_loss:>8f}")
     return confusion_matrix(true, pred), confusion_matrix(true, pred, normalize='true'), wrong_pred, right_pred, \
            test_loss, 100*correct
 
@@ -233,7 +233,7 @@ def training_loop(epochs, optimizer, criterion, model, train_dataloader, test_da
     train_accuracy = []
 
     # training the model
-    for epoch in range(epochs):  # loop over the dataset multiple times
+    for epoch in tqdm(range(epochs)):  # loop over the dataset multiple times
         train_loss_current, train_accuracy_current = train(train_dataloader, optimizer, criterion, model, epoch, device)
         train_loss.append(train_loss_current)
         train_accuracy.append(train_accuracy_current)
