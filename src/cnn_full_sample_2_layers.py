@@ -382,13 +382,13 @@ if __name__ == "__main__":
     epochs = 100
     padding = 1
     kernel_size = 5
-    pool_size = 3
+    # pool_size = 3
     dilation = 1
-    # conv_factor = 2
+    conv_factor = 3
     stride = 3
 
     # 4 conv layer
 
-    for conv_factor in range(5, 6):
+    for pool_size in range(3, 26):
         results = network_training(epochs, stride, padding, kernel_size, pool_size, dilation, conv_factor, path, pattern)
         results.to_csv(f"{save_dir}conv_factor{conv_factor}_2layers_network_metrics_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
