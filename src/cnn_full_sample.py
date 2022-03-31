@@ -114,18 +114,18 @@ class Network(nn.Module):
         conv3_size = numpy.floor(
             numpy.floor((conv2_size + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1) / pool_size)
 
-        self.conv4 = nn.Conv1d(conv_factor ** 3, conv_factor ** 4, kernel_size=kernel_size, padding=padding,
-                               stride=stride, dilation=dilation)
-        conv4_size = numpy.floor(
-            numpy.floor((conv3_size + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1) / pool_size)
+        # self.conv4 = nn.Conv1d(conv_factor ** 3, conv_factor ** 4, kernel_size=kernel_size, padding=padding,
+        #                       stride=stride, dilation=dilation)
+        # conv4_size = numpy.floor(
+        #    numpy.floor((conv3_size + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1) / pool_size)
 
-        self.fc1 = nn.Linear(int(conv_factor ** 4 * conv4_size), 4)  # input 1000 / 4 384//8
+        self.fc1 = nn.Linear(int(conv_factor ** 3 * conv3_size), 4)  # input 1000 / 4 384//8
 
     def forward(self, x):
         x = F.max_pool1d(F.relu(self.conv1(x)), pool_size)
         x = F.max_pool1d(F.relu(self.conv2(x)), pool_size)
         x = F.max_pool1d(F.relu(self.conv3(x)), pool_size)
-        x = F.max_pool1d(F.relu(self.conv4(x)), pool_size)
+        # x = F.max_pool1d(F.relu(self.conv4(x)), pool_size)
         x = torch.flatten(x, 1)
         x = F.softmax(self.fc1(x), dim=1)
         return x
@@ -380,11 +380,11 @@ if __name__ == "__main__":
     epochs = 100
     padding = 1
     kernel_size = 5
-    # pool_size = 3
+    pool_size = 3
     dilation = 1
-    conv_factor = 2
+    # conv_factor = 2
     stride = 3
 
-    for pool_size in range(2, 10):
+    for conv_factor in range(2, 5):
         results = network_training(epochs, stride, padding, kernel_size, pool_size, dilation, conv_factor, path, pattern)
-        results.to_csv(f"{save_dir}poolsize{pool_size}_network_metrics_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
+        results.to_csv(f"{save_dir}conv_factor{conv_factor}_network_metrics_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
