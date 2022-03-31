@@ -381,15 +381,16 @@ if __name__ == "__main__":
     # setting hyperparameters
     epochs = 200
     # padding = 1
-    # kernel_size = 5
+    kernel_size = 9
+    padding = int(numpy.floor(kernel_size / 2))
     pool_size = 4
     dilation = 1
     conv_factor = 3
-    stride = 3
+    # stride = 3
 
     # 2 conv layer
 
-    for kernel_size in range(3, 12, 2):
-        padding = int(numpy.floor(kernel_size/2))
+    for stride in range(5, 6):
+
         results = network_training(epochs, stride, padding, kernel_size, pool_size, dilation, conv_factor, path, pattern)
-        results.to_csv(f"{save_dir}kernerl_size{kernel_size}_2layers_network_metrics_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
+        results.to_csv(f"{save_dir}stride{stride}_2layers_network_metrics_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
