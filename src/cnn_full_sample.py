@@ -243,7 +243,6 @@ def training_loop(epochs, optimizer, criterion, model, train_dataloader, test_da
         test_accuracy.append(test_accuracy_current)
     logging.info('Finished Training')
 
-    """
     # plotting loss
     plt.plot(train_loss)
     plt.plot(test_loss)
@@ -252,7 +251,7 @@ def training_loop(epochs, optimizer, criterion, model, train_dataloader, test_da
     plt.plot(train_accuracy)
     plt.plot(test_accuracy)
     plt.show()
-
+    """
     # displaying confusation matrices
     disp = ConfusionMatrixDisplay(confusion_matrix=confusion_matrix_raw, display_labels=[0, 1, 2, 3])
     disp.plot()
@@ -388,6 +387,6 @@ if __name__ == "__main__":
     # 3 conv layer
 
     for kernel_size in range(3, 11, 2):
-        padding = numpy.floor(kernel_size/2)
+        padding = int(numpy.floor(kernel_size/2))
         results = network_training(epochs, stride, padding, kernel_size, pool_size, dilation, conv_factor, path, pattern)
         results.to_csv(f"{save_dir}conv_factor{conv_factor}_network_metrics_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
