@@ -115,11 +115,11 @@ class Network(nn.Module):
             numpy.floor((conv2_size + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1) / pool_size)
 
         self.conv4 = nn.Conv1d(conv_factor ** 3, conv_factor ** 4, kernel_size=kernel_size, padding=padding,
-                            stride=stride, dilation=dilation)
+                               stride=stride, dilation=dilation)
         conv4_size = numpy.floor(
            numpy.floor((conv3_size + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1) / pool_size)
 
-        self.fc1 = nn.Linear(int(conv_factor ** 3 * conv4_size), 4)  # input 1000 / 4 384//8
+        self.fc1 = nn.Linear(int(conv_factor ** 4 * conv4_size), 4)  # input 1000 / 4 384//8
 
     def forward(self, x):
         x = F.max_pool1d(F.relu(self.conv1(x)), pool_size)
@@ -178,8 +178,8 @@ def test(dataloader, criterion, model, epoch, device):
             outputs = model(inputs)
             loss = criterion(outputs, labels)
             test_loss += loss.item()
-            ACC.append((torch.argmax(outputs,axis=1)==labels).float().mean().item())
-            pred.extend(list((torch.argmax(outputs,axis=1).cpu().numpy())))
+            ACC.append((torch.argmax(outputs, axis=1)==labels).float().mean().item())
+            pred.extend(list((torch.argmax(outputs, axis=1).cpu().numpy())))
             true.extend(list(labels.cpu().numpy()))
             correct += (outputs.argmax(1) == labels).type(torch.float).sum().item()
             for i, output in enumerate(outputs):
