@@ -380,7 +380,7 @@ if __name__ == "__main__":
 
     # setting hyperparameters
     epochs = 100
-    padding = 1
+    # padding = 1
     # kernel_size = 5
     pool_size = 4
     dilation = 1
