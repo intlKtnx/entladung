@@ -379,7 +379,7 @@ if __name__ == "__main__":
     save_dir = arguments[3]
 
     # setting hyperparameters
-    epochs = 100
+    epochs = 200
     # padding = 1
     # kernel_size = 5
     pool_size = 4

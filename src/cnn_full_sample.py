@@ -376,7 +376,7 @@ if __name__ == "__main__":
     save_dir = arguments[3]
 
     # setting hyperparameters
-    epochs = 100
+    epochs = 200
     # padding = 1
     # kernel_size = 5
     pool_size = 3
@@ -386,7 +386,7 @@ if __name__ == "__main__":
 
     # 3 conv layer
 
-    for kernel_size in range(3, 11, 2):
+    for kernel_size in range(3, 12, 2):
         padding = int(numpy.floor(kernel_size/2))
         results = network_training(epochs, stride, padding, kernel_size, pool_size, dilation, conv_factor, path, pattern)
         results.to_csv(f"{save_dir}conv_factor{conv_factor}_network_metrics_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
