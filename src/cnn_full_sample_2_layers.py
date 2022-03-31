@@ -379,7 +379,7 @@ if __name__ == "__main__":
     save_dir = arguments[3]
 
     # setting hyperparameters
-    epochs = 200
+    epochs = 100
     # padding = 1
     kernel_size = 9
     padding = int(numpy.floor(kernel_size / 2))
