@@ -382,7 +382,7 @@ if __name__ == "__main__":
     kernel_size = 5
     pool_size = 3
     dilation = 1
-    # conv_factor = 2
+    conv_factor = 3
     stride = 3
 
     for conv_factor in range(2, 6):

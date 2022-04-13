@@ -297,8 +297,6 @@ def network_training(epochs, stride, padding, kernel_size, pool_size, dilation, 
         seed_all(seed)
         logging.info(f"seed={seed}")
 
-
-
         model = Network().to(device)
 
         # setting loss and optimizer
@@ -377,13 +375,13 @@ if __name__ == "__main__":
 
     # setting hyperparameters
     epochs = 100
-    # padding = 1
     kernel_size = 3
     padding = int(numpy.floor(kernel_size / 2))
     pool_size = 3
+    stride = 3
     dilation = 1
     conv_factor = 3
-    stride = 3
+
 
     # 3 conv layer
 
