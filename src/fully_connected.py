@@ -36,14 +36,14 @@ if __name__ == "__main__":
     pattern = arguments[2]
     save_dir = arguments[3]
 
-    epochs = 10
+    epochs = 50
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     logging.info('Using {} device'.format(device))
 
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
         wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
-        seed_loop(Network, device, CustomDataset(data_path, pattern), epochs, 2)
+        seed_loop(Network, device, CustomDataset(data_path, pattern), epochs, 20)
     """
     for i in confusion_matrix_raw:
         disp = ConfusionMatrixDisplay(i, display_labels=[0, 1, 2, 3])
