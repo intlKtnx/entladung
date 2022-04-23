@@ -1,6 +1,8 @@
 from base_functions import *
 import torch.nn as nn
 import numpy
+import sys
+from datetime import datetime
 
 
 class Network(nn.Module):
@@ -36,6 +38,7 @@ class Network(nn.Module):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
+    """
     # home_path = "/home/marcus/Dokumente/entladung/"
     data_path = "/home/marcus/Dokumente/entladung/modified_data"
     pattern = 'raw_data_.h5'
@@ -44,10 +47,10 @@ if __name__ == "__main__":
     arguments = sys.argv
     logging.info(arguments)
 
-    path = arguments[1]
+    data_path = arguments[1]
     pattern = arguments[2]
     save_dir = arguments[3]
-    """
+
     # Setting Hyperparameters
     epochs = 75
     input_size = 20002
@@ -68,16 +71,41 @@ if __name__ == "__main__":
     logging.info('Using {} device'.format(device))
 
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
-    wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
+        wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
         seed_loop(Network, device, CustomDataset(data_path, pattern), epochs, 10)
 
+    """
     model = Network().to(device)
     print(model)
     params_per_layer = list((p.numel() for p in model.parameters() if p.requires_grad))
     print(params_per_layer)
     print(sum(params_per_layer))
+    """
 
     for i in confusion_matrix_raw:
         disp = ConfusionMatrixDisplay(i, display_labels=[0, 1, 2, 3])
         disp.plot()
         plt.show()
+
+    metrics = pandas.DataFrame({
+        'parameters': total_params(Network().to(device)),
+        'epochs': epochs,
+        'stride': stride,
+        'padding': padding,
+        'kernel_size': kernel_size,
+        'pool_size': pool_size,
+        'dilation': dilation,
+        'conv_factor': conv_factor,
+
+        'test_loss': test_loss,
+        'test_accuracy': test_accuracy,
+        'train_loss': train_loss,
+        'train_accuracy': train_accuracy,
+        'confusion_matrix': confusion_matrix_raw,
+        'confusion_matrix_normalized': confusion_matrix_normalized,
+        'validation_loss': validation_loss,
+        'validation_accuracy': validation_accuracy
+    })
+
+    metrics.to_csv(
+        f"{save_dir}_fully_connected_without_relu{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")

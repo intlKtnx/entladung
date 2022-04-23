@@ -158,9 +158,9 @@ def training_loop(epochs, optimizer, criterion, model, train_dataloader, test_da
     plt.show()  
     """
 
-    plt.plot(train_accuracy)
-    plt.plot(test_accuracy)
-    plt.show()
+    # plt.plot(train_accuracy)
+    # plt.plot(test_accuracy)
+    # plt.show()
     """
     # displaying confusation matrices
     disp = ConfusionMatrixDisplay(confusion_matrix=confusion_matrix_raw, display_labels=[0, 1, 2, 3])
