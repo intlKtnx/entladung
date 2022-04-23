@@ -22,6 +22,13 @@ def data_loader(file_path, pattern):
                 group_data = []
                 i = 0
                 for dname, ds in tqdm(group.items()):
+                    plt.plot(ds[:])
+                plt.title(gname)
+                plt.show()
+
+
+                """
+                peaks counting
                     arr = np.array(ds[:])
                     max_value = np.amax(arr)
                     peaks = np.count_nonzero(abs(arr) > 80)
@@ -32,8 +39,9 @@ def data_loader(file_path, pattern):
                         plt.savefig(f"/home/marcus/Dokumente/entladung/2_peak_samples/{gname}_{dname}")
                         plt.show()
                     i += 1
+                    """
             #data.append(numpy.array(group_data))
-    return np.array(data, dtype=object)
+    #return np.array(data, dtype=object)
 
 
 def whatever(file_path, pattern):
@@ -44,4 +52,4 @@ def whatever(file_path, pattern):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    data_loader("/home/marcus/Dokumente/entladung/", "correct_rnn*.h5")
+    data_loader("/home/marcus/Dokumente/entladung/modified_data", "correct*.h5")
