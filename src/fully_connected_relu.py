@@ -10,9 +10,9 @@ class Network(nn.Module):
         super(Network, self).__init__()
         self.model = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(20002, 4),
+            nn.Linear(20002, 100),
             nn.ReLU(),
-            nn.Linear(4, 4),
+            nn.Linear(100, 4),
             nn.Softmax(dim=1),
         )
 

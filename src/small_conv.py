@@ -16,13 +16,13 @@ class Network(nn.Module):
         conv1_size = out_size_conv(input_size)
         conv2_size = out_size_conv(conv1_size)
         self.model = nn.Sequential(
-            nn.Conv1d(conv_factor**0, conv_factor**2, kernel_size=kernel_size, padding=padding, stride=stride,
+            nn.Conv1d(conv_factor**0, conv_factor**1, kernel_size=kernel_size, padding=padding, stride=stride,
                       dilation=dilation),
             nn.ReLU(),
 
-            # nn.Conv1d(conv_factor ** 1, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
-            #          dilation=dilation),
-            # nn.ReLU(),
+            nn.Conv1d(conv_factor ** 1, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
+                      dilation=dilation),
+            nn.ReLU(),
             # nn.MaxPool1d(pool_size, stride=pool_stride, padding=pool_padding, dilation=pool_dilation),
             nn.AvgPool1d(kernel_size=int(conv2_size)),
             nn.Flatten(),
