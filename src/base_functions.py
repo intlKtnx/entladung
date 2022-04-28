@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 def total_params(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
+
 def print_model_params(Network, device):
     model = Network().to(device)
     print(model)
@@ -46,7 +47,7 @@ def seed_worker(worker_id):
     random.seed(worker_seed)
 
 
-def validation(dataloader, model, criterion, device):
+def validation(dataloader, model, criterion, device, rnn=False, sequence_length=0, input_size=0):
     acc = []
     pred = []
     true = []
@@ -60,6 +61,8 @@ def validation(dataloader, model, criterion, device):
     with torch.no_grad():
         for labels, inputs in dataloader:
             labels, inputs = labels.to(device), inputs.to(device)
+            if rnn:
+                inputs = inputs.reshape(-1, sequence_length, input_size).to(device)
             outputs = model(inputs)
             loss = criterion(outputs, labels)
             validation_loss += loss.item()
@@ -77,7 +80,7 @@ def validation(dataloader, model, criterion, device):
     return correct * 100, validation_loss
 
 
-def test(dataloader, criterion, model, epoch, device):
+def test(dataloader, criterion, model, epoch, device, rnn=False, sequence_length=0, input_size=0):
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
     model.eval()
@@ -90,6 +93,8 @@ def test(dataloader, criterion, model, epoch, device):
     with torch.no_grad():
         for labels, inputs in dataloader:
             labels, inputs = labels.to(device), inputs.to(device)
+            if rnn:
+                inputs = inputs.reshape(-1, sequence_length, input_size).to(device)
             outputs = model(inputs)
             loss = criterion(outputs, labels)
             test_loss += loss.item()
@@ -109,7 +114,7 @@ def test(dataloader, criterion, model, epoch, device):
            test_loss, 100*correct
 
 
-def train(dataloader, optimizer, criterion, model, epoch, device):
+def train(dataloader, optimizer, criterion, model, epoch, device, rnn=False, sequence_length=0, input_size=0):
     model.train()
     size = len(dataloader.dataset)
     running_loss = 0.0
@@ -119,6 +124,8 @@ def train(dataloader, optimizer, criterion, model, epoch, device):
         # get the inputs; data is a list of [labels, inputs]
 
         inputs = data[1]
+        if rnn:
+            inputs = inputs.reshape(-1, sequence_length, input_size).to(device)
         labels = data[0]
         inputs = inputs.to(device)
         labels = labels.to(device)
@@ -140,7 +147,7 @@ def train(dataloader, optimizer, criterion, model, epoch, device):
     return running_loss / (i + 1), correct * 100
 
 
-def training_loop(epochs, optimizer, criterion, model, train_dataloader, test_dataloader, device):
+def training_loop(epochs, optimizer, criterion, model, train_dataloader, test_dataloader, device, rnn=False, sequence_length=0, input_size=0):
 
     test_loss = []
     test_accuracy = []
@@ -149,11 +156,11 @@ def training_loop(epochs, optimizer, criterion, model, train_dataloader, test_da
 
     # training the model
     for epoch in tqdm(range(epochs)):  # loop over the dataset multiple times
-        train_loss_current, train_accuracy_current = train(train_dataloader, optimizer, criterion, model, epoch, device)
+        train_loss_current, train_accuracy_current = train(train_dataloader, optimizer, criterion, model, epoch, device, rnn=rnn, sequence_length=sequence_length, input_size=input_size)
         train_loss.append(train_loss_current)
         train_accuracy.append(train_accuracy_current)
         confusion_matrix_raw, confusion_matrix_normalized, wrong_predictions, right_predictions, \
-            test_loss_current, test_accuracy_current = test(test_dataloader, criterion, model, epoch, device)
+            test_loss_current, test_accuracy_current = test(test_dataloader, criterion, model, epoch, device, rnn=rnn, sequence_length=sequence_length, input_size=input_size)
         test_loss.append(test_loss_current)
         test_accuracy.append(test_accuracy_current)
     logging.info('Finished Training')
@@ -182,7 +189,7 @@ def training_loop(epochs, optimizer, criterion, model, train_dataloader, test_da
            wrong_predictions, right_predictions
 
 class CustomDataset(data.Dataset):
-    def __init__(self, file_path, pattern, transform=None):
+    def __init__(self, file_path, pattern, transform=None, rnn=False):
         super().__init__()
         self.train_data_cache = []
         self.test_data_cache = []
@@ -194,6 +201,11 @@ class CustomDataset(data.Dataset):
         p = Path(file_path)
         files = p.glob(pattern)
         logging.debug(files)
+        if rnn:
+            length = 20000
+        else:
+            length = 20002
+
         for h5dataset_fp in files:
             logging.debug(h5dataset_fp)
             with h5py.File(h5dataset_fp.resolve()) as h5_file:
@@ -216,15 +228,15 @@ class CustomDataset(data.Dataset):
                     for dname, ds in tqdm(group.items()):
                         if k < 1801:  # 3000
                             self.train_data_cache.append(
-                                [label, torch.tensor(ds[:]).unsqueeze(0).type(torch.float32)])
+                                [label, torch.tensor(ds[:length]).unsqueeze(0).type(torch.float32)])
                             k += 1
                         elif j < 601:  # 400
                             self.test_data_cache.append(
-                                [label, torch.tensor(ds[:]).unsqueeze(0).type(torch.float32)])
+                                [label, torch.tensor(ds[:length]).unsqueeze(0).type(torch.float32)])
                             j += 1
                         elif l < 601:
                             self.validation_data_cache.append(
-                                [label, torch.tensor(ds[:]).unsqueeze(0).type(torch.float32)])
+                                [label, torch.tensor(ds[:length]).unsqueeze(0).type(torch.float32)])
                         if k == 1801 and j == 601 and l == 601:
                             break
 
@@ -241,7 +253,7 @@ class CustomDataset(data.Dataset):
         return self.validation_data_cache
 
 
-def seed_loop(Network, device, customData, epochs, seeds):
+def seed_loop(Network, device, customData, epochs, seeds, rnn=False, sequence_length=0, input_size=0):
     test_loss_array = []
     test_accuracy_array = []
     train_loss_array = []
@@ -280,9 +292,9 @@ def seed_loop(Network, device, customData, epochs, seeds):
 
         # training the network
         test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, wrong_predictions, right_predictions \
-            = training_loop(epochs, optimizer, criterion, model, train_dataloader, test_dataloader, device)
+            = training_loop(epochs, optimizer, criterion, model, train_dataloader, test_dataloader, device, rnn=rnn, sequence_length=sequence_length, input_size=input_size)
 
-        validation_accuracy, validation_loss = validation(validation_dataloader, model, criterion, device)
+        validation_accuracy, validation_loss = validation(validation_dataloader, model, criterion, device, rnn=rnn, sequence_length=sequence_length, input_size=input_size)
 
         test_loss_array.append(test_loss)
         test_accuracy_array.append(test_accuracy)
