@@ -103,4 +103,3 @@ if __name__ == "__main__":
 
     metrics.to_csv(
         f"{save_dir}_conv_fc_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
-    """
