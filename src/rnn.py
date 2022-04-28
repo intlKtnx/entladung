@@ -43,7 +43,7 @@ if __name__ == "__main__":
     input_size = 20000
     sequence_length = 1
     hidden_size = 64
-    num_layers = 10
+    num_layers = 1
     epochs = 100
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
