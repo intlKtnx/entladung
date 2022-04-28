@@ -2,6 +2,7 @@ from base_functions import *
 import sys
 from datetime import datetime
 
+
 class Network(nn.Module):
     def __init__(self):
         super(Network, self).__init__()
@@ -59,8 +60,8 @@ def network_training(epochs, stride, padding, kernel_size, pool_size, dilation, 
     validation_accuracy_array = []
 
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
-    wrong_predictions, right_predictions, validation_accuracy, validation_loss = seed_loop(Network, device, customData,
-                                                                                           epochs)
+        wrong_predictions, right_predictions, validation_accuracy, validation_loss = seed_loop(Network, device, customData, epochs, 20)
+
     test_loss_array.append(test_loss)
     test_accuracy_array.append(test_accuracy)
 
@@ -103,8 +104,8 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     # home_path = "/home/marcus/Dokumente/entladung/"
-    #data_path = "/home/marcus/Dokumente/entladung/modified_data"
-    #pattern = 'normalize*.h5'
+    # data_path = "/home/marcus/Dokumente/entladung/modified_data"
+    # pattern = 'normalize*.h5'
 
     arguments = sys.argv
     logging.info(arguments)
@@ -122,10 +123,9 @@ if __name__ == "__main__":
     dilation = 1
     conv_factor = 3
 
-
     # 3 conv layer
 
     for stride in range(3, 4):
-
-        results = network_training(epochs, stride, padding, kernel_size, pool_size, dilation, conv_factor, path, pattern, Network)
+        results = network_training(epochs, stride, padding, kernel_size, pool_size, dilation, conv_factor, path,
+                                   pattern, Network)
         results.to_csv(f"{save_dir}stride{stride}_3layers_network_metrics_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
