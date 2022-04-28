@@ -19,6 +19,13 @@ import matplotlib.pyplot as plt
 def total_params(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
+def print_model_params(Network, device):
+    model = Network().to(device)
+    print(model)
+    params_per_layer = list((p.numel() for p in model.parameters() if p.requires_grad))
+    print(params_per_layer)
+    print(sum(params_per_layer))
+
 
 def seed_all(seed):
     torch.manual_seed(seed)
