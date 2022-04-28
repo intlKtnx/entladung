@@ -40,18 +40,17 @@ class Network(nn.Module):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
-    """
-    # home_path = "/home/marcus/Dokumente/entladung/"
+    save_dir = "/home/marcus/Dokumente/entladung/"
     data_path = "/home/marcus/Dokumente/entladung/modified_data"
     pattern = 'raw_data_.h5'
 
-    """
-    arguments = sys.argv
-    logging.info(arguments)
+    if len(sys.argv) >= 2:
+        arguments = sys.argv
+        logging.info(arguments)
 
-    data_path = arguments[1]
-    pattern = arguments[2]
-    save_dir = arguments[3]
+        data_path = arguments[1]
+        pattern = arguments[2]
+        save_dir = arguments[3]
 
     # Setting Hyperparameters
     epochs = 100
@@ -72,17 +71,10 @@ if __name__ == "__main__":
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     logging.info('Using {} device'.format(device))
 
+    # print_model_params(Network, device)
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
         wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
         seed_loop(Network, device, CustomDataset(data_path, pattern), epochs, 20)
-
-    """
-    model = Network().to(device)
-    print(model)
-    params_per_layer = list((p.numel() for p in model.parameters() if p.requires_grad))
-    print(params_per_layer)
-    print(sum(params_per_layer))
-    """
 
     for i in confusion_matrix_raw:
         disp = ConfusionMatrixDisplay(i, display_labels=[0, 1, 2, 3])
@@ -111,3 +103,4 @@ if __name__ == "__main__":
 
     metrics.to_csv(
         f"{save_dir}_conv_fc_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
+    """
