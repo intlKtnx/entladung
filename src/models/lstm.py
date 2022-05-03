@@ -29,34 +29,23 @@ class LSTM(nn.Module):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-
-    save_dir = "//"
-    data_path = "/home/marcus/Dokumente/entladung/modified_data"
-    pattern = 'raw_data_.h5'
-
-    arguments = sys.argv
-    logging.info(arguments)
-    if len(sys.argv) >= 2:
-
-        data_path = arguments[1]
-        pattern = arguments[2]
-        save_dir = arguments[3]
+    data_path, pattern, save_dir = path_init(sys.argv)
+    device = device_init()
 
     # Setting Hyperparameters
     num_classes = 4
     input_size = 20000
+    number_of_seeds = 20
+
     sequence_length = 1
     hidden_size = 64
     num_layers = 1
     epochs = 100
 
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    logging.info('Using {} device'.format(device))
-
     # print_model_params(Network, device)
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
     wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
-        seed_loop(LSTM, device, CustomDataset(data_path, pattern, rnn=True), epochs, 20, rnn=True, sequence_length=sequence_length, input_size=input_size)
+        seed_loop(LSTM, device, CustomDataset(data_path, pattern, rnn=True), epochs, number_of_seeds, rnn=True, sequence_length=sequence_length, input_size=input_size)
 
     metrics = pandas.DataFrame({
         'parameters': total_params(LSTM().to(device)),

@@ -30,7 +30,6 @@ class RNN(nn.Module):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-
     data_path, pattern, save_dir = path_init(sys.argv)
     device = device_init()
 
@@ -41,14 +40,11 @@ if __name__ == "__main__":
     hidden_size = 64
     num_layers = 1
     epochs = 100
+    number_of_seeds = 20
 
-
-
-
-    # print_model_params(Network, device)
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
     wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
-        seed_loop(RNN, device, CustomDataset(data_path, pattern, rnn=True), epochs, 20, rnn=True, sequence_length=sequence_length, input_size=input_size)
+        seed_loop(RNN, device, CustomDataset(data_path, pattern, rnn=True), epochs, number_of_seeds, rnn=True, sequence_length=sequence_length, input_size=input_size)
 
     metrics = pandas.DataFrame({
         'parameters': total_params(RNN().to(device)),

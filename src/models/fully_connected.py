@@ -22,34 +22,16 @@ class Network(nn.Module):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-
-    """
-    home_path = "/home/marcus/Dokumente/entladung/"
-    data_path = "/home/marcus/Dokumente/entladung/modified_data"
-    pattern = 'raw_data_.h5'
-
-    """
-    arguments = sys.argv
-    logging.info(arguments)
-
-    data_path = arguments[1]
-    pattern = arguments[2]
-    save_dir = arguments[3]
+    data_path, pattern, save_dir = path_init(sys.argv)
+    device = device_init()
 
     epochs = 50
-
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    logging.info('Using {} device'.format(device))
+    number_of_seeds = 20
 
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
         wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
-        seed_loop(Network, device, CustomDataset(data_path, pattern), epochs, 20)
-    """
-    for i in confusion_matrix_raw:
-        disp = ConfusionMatrixDisplay(i, display_labels=[0, 1, 2, 3])
-        disp.plot()
-        plt.show()
-    """
+        seed_loop(Network, device, CustomDataset(data_path, pattern), epochs, number_of_seeds)
+
 
     metrics = pandas.DataFrame({
         'parameters': total_params(Network().to(device)),

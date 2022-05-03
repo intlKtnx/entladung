@@ -332,4 +332,3 @@ def device_init():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     logging.info('Using {} device'.format(device))
     return device
-
