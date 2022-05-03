@@ -4,9 +4,9 @@ from datetime import datetime
 import sys
 
 
-class Network(nn.Module):
+class FC_RELU(nn.Module):
     def __init__(self):
-        super(Network, self).__init__()
+        super(FC_RELU, self).__init__()
         self.model = nn.Sequential(
             nn.Flatten(),
             nn.Linear(20002, 100),
@@ -29,10 +29,10 @@ if __name__ == "__main__":
 
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
     wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
-        seed_loop(Network, device, CustomDataset(data_path, pattern), epochs, 20)
+        seed_loop(FC_RELU, device, CustomDataset(data_path, pattern), epochs, 20)
 
     metrics = pandas.DataFrame({
-        'parameters': total_params(Network().to(device)),
+        'parameters': total_params(FC_RELU().to(device)),
 
         'test_loss': test_loss,
         'test_accuracy': test_accuracy,

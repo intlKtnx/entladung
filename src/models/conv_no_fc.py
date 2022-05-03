@@ -5,9 +5,9 @@ import sys
 from datetime import datetime
 
 
-class Network(nn.Module):
+class CONV_NO_FC(nn.Module):
     def __init__(self):
-        super(Network, self).__init__()
+        super(CONV_NO_FC, self).__init__()
 
         out_size_conv = lambda l_in: numpy.floor(((l_in + 2 * padding - dilation * (kernel_size - 1) - 1)
                                                   / stride) + 1)
@@ -23,12 +23,9 @@ class Network(nn.Module):
             nn.Conv1d(conv_factor ** 1, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
                       dilation=dilation),
             nn.ReLU(),
-            # nn.MaxPool1d(pool_size, stride=pool_stride, padding=pool_padding, dilation=pool_dilation),
             nn.AvgPool1d(kernel_size=int(conv2_size)),
             nn.Flatten(),
-            # nn.Linear(int(conv1_size * conv_factor**2), 4),
             nn.Softmax(dim=1),
-            # fc -> convlayer + maxpool -> poolsize& stride drastisch erhöht -> conv stride erhöht
         )
 
     def forward(self, x):
@@ -61,7 +58,7 @@ if __name__ == "__main__":
 
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
         wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
-        seed_loop(Network, device, CustomDataset(data_path, pattern), epochs, number_of_seeds)
+        seed_loop(CONV_NO_FC, device, CustomDataset(data_path, pattern), epochs, number_of_seeds)
 
     for i in confusion_matrix_raw:
         disp = ConfusionMatrixDisplay(i, display_labels=[0, 1, 2, 3])
@@ -69,7 +66,7 @@ if __name__ == "__main__":
         plt.show()
 
     metrics = pandas.DataFrame({
-        'parameters': total_params(Network().to(device)),
+        'parameters': total_params(CONV_NO_FC().to(device)),
         'epochs': epochs,
         'stride': stride,
         'padding': padding,
