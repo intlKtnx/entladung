@@ -17,9 +17,7 @@ class LSTM(nn.Module):
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
-        #out, _ = self.rnn(x, h0)
 
-        # or:
         out, _ = self.lstm(x, (h0, c0))
 
         out = out[:, -1, :]
@@ -34,10 +32,10 @@ if __name__ == "__main__":
 
     # Setting Hyperparameters
     num_classes = 4
-    input_size = 20000
+    input_size = 200
     number_of_seeds = 20
 
-    sequence_length = 1
+    sequence_length = 100
     hidden_size = 64
     num_layers = 1
     epochs = 100
