@@ -40,7 +40,7 @@ class Network(nn.Module):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
-    save_dir = "/home/marcus/Dokumente/entladung/"
+    save_dir = "//"
     data_path = "/home/marcus/Dokumente/entladung/modified_data"
     pattern = 'raw_data_.h5'
 

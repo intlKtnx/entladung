@@ -4,12 +4,13 @@ import sys
 from datetime import datetime
 
 
-class LSTM(nn.Module):
+class RNN(nn.Module):
     def __init__(self):
-        super(LSTM, self).__init__()
+        super(RNN, self).__init__()
         self.num_layers = num_layers
         self.hidden_size = hidden_size
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
+        self.rnn = nn.RNN(input_size, hidden_size, num_layers, batch_first=True)
+        # self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
 
         self.fc = nn.Linear(hidden_size, num_classes)
         self.softmax = nn.Softmax(dim=1)
@@ -17,10 +18,10 @@ class LSTM(nn.Module):
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
-        #out, _ = self.rnn(x, h0)
+        out, _ = self.rnn(x, h0)
 
         # or:
-        out, _ = self.lstm(x, (h0, c0))
+        # out, _ = self.lstm(x, (h0, c0))
 
         out = out[:, -1, :]
         out = self.softmax(self.fc(out))
@@ -30,17 +31,8 @@ class LSTM(nn.Module):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
-    save_dir = "/home/marcus/Dokumente/entladung/"
-    data_path = "/home/marcus/Dokumente/entladung/modified_data"
-    pattern = 'raw_data_.h5'
-
-    arguments = sys.argv
-    logging.info(arguments)
-    if len(sys.argv) >= 2:
-
-        data_path = arguments[1]
-        pattern = arguments[2]
-        save_dir = arguments[3]
+    data_path, pattern, save_dir = path_init(sys.argv)
+    device = device_init()
 
     # Setting Hyperparameters
     num_classes = 4
@@ -50,16 +42,16 @@ if __name__ == "__main__":
     num_layers = 1
     epochs = 100
 
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    logging.info('Using {} device'.format(device))
+
+
 
     # print_model_params(Network, device)
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
     wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
-        seed_loop(LSTM, device, CustomDataset(data_path, pattern, rnn=True), epochs, 20, rnn=True, sequence_length=sequence_length, input_size=input_size)
+        seed_loop(RNN, device, CustomDataset(data_path, pattern, rnn=True), epochs, 20, rnn=True, sequence_length=sequence_length, input_size=input_size)
 
     metrics = pandas.DataFrame({
-        'parameters': total_params(LSTM().to(device)),
+        'parameters': total_params(RNN().to(device)),
         'epochs': epochs,
         'input_size': input_size,
         'sequence_length': sequence_length,
@@ -77,5 +69,5 @@ if __name__ == "__main__":
     })
 
     metrics.to_csv(
-        f"{save_dir}lstm{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
+        f"{save_dir}rnn{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
 

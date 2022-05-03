@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from torch.utils import data
-
+import sys
 from tqdm import tqdm
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import logging
@@ -314,3 +314,22 @@ def seed_loop(Network, device, customData, epochs, seeds, rnn=False, sequence_le
     return test_loss_array, test_accuracy_array, train_loss_array, train_accuracy_array, confusion_matrix_raw_array,\
         confusion_matrix_normalized_array, wrong_predictions_array, right_predictions_array, \
         validation_accuracy_array, validation_loss_array
+
+
+def path_init(args):
+    save_dir = "//"
+    data_path = "/home/marcus/Dokumente/entladung/modified_data"
+    pattern = 'raw_data_.h5'
+
+    if len(args) > 2:
+        data_path = args[1]
+        pattern = args[2]
+        save_dir = args[3]
+    return data_path, pattern, save_dir
+
+
+def device_init():
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    logging.info('Using {} device'.format(device))
+    return device
+

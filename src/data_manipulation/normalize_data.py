@@ -41,4 +41,4 @@ def normalize(file_path):
 
 
 if __name__ == "__main__":
-    normalize("/home/marcus/Dokumente/entladung/")
+    normalize("//")

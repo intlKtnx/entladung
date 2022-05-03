@@ -147,5 +147,5 @@ def toh5(file_path):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    toh5("/home/marcus/Dokumente/entladung/")
+    toh5("//")
 
