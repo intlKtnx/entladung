@@ -319,7 +319,7 @@ def seed_loop(Network, device, customData, epochs, seeds, rnn=False, sequence_le
 def path_init(args):
     save_dir = "/home/marcus/Dokumente/entladung/csv_results/to_analyze"
     data_path = "/home/marcus/Dokumente/entladung/modified_data"
-    pattern = 'normalized.h5'
+    pattern = 'normalized_data.h5'
 
     if len(args) > 2:
         data_path = args[1]
