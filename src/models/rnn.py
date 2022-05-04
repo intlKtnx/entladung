@@ -31,8 +31,8 @@ if __name__ == "__main__":
 
     # Setting Hyperparameters
     num_classes = 4
-    input_size = 4
-    sequence_length = 5000
+    input_size = 20
+    sequence_length = 1000
     hidden_size = 64
     num_layers = 1
     epochs = 100

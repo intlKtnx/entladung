@@ -32,10 +32,10 @@ if __name__ == "__main__":
 
     # Setting Hyperparameters
     num_classes = 4
-    input_size = 4
+    input_size = 20
     number_of_seeds = 20
 
-    sequence_length = 5000
+    sequence_length = 1000
     hidden_size = 64
     num_layers = 1
     epochs = 100

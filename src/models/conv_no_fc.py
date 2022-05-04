@@ -20,6 +20,9 @@ class CONV_NO_FC(nn.Module):
                       dilation=dilation),
             nn.ReLU(),
 
+            nn.Conv1d(conv_factor ** 1, conv_factor ** 1, kernel_size=kernel_size, padding=padding, stride=stride,
+                      dilation=dilation),
+            nn.ReLU(),
             nn.Conv1d(conv_factor ** 1, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
                       dilation=dilation),
             nn.ReLU(),
