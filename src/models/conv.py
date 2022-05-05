@@ -55,8 +55,8 @@ if __name__ == "__main__":
     conv_factor = 2
 
     # maxpool parameters
-    pool_size = 31
-    pool_padding = 15
+    pool_size = 15
+    pool_padding = 7
     pool_stride = pool_size
     pool_dilation = 1
 
