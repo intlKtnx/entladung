@@ -33,10 +33,12 @@ if __name__ == "__main__":
     num_classes = 4
     input_size = 20
     sequence_length = 1000
-    hidden_size = 64
+    number_of_seeds = 20
+
+    hidden_size = 128
     num_layers = 1
     epochs = 100
-    number_of_seeds = 20
+
 
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
     wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
@@ -61,5 +63,5 @@ if __name__ == "__main__":
     })
 
     metrics.to_csv(
-        f"{save_dir}rnn{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
+        f"{save_dir}rnn_128{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
 

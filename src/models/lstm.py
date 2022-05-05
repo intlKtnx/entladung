@@ -32,11 +32,12 @@ if __name__ == "__main__":
 
     # Setting Hyperparameters
     num_classes = 4
-    input_size = 20
     number_of_seeds = 20
 
+    input_size = 20
     sequence_length = 1000
-    hidden_size = 64
+
+    hidden_size = 128
     num_layers = 1
     epochs = 100
 
@@ -64,5 +65,5 @@ if __name__ == "__main__":
     })
 
     metrics.to_csv(
-        f"{save_dir}lstm{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
+        f"{save_dir}lstm_128{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
 
