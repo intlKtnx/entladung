@@ -14,7 +14,6 @@ class CONV_FC(nn.Module):
         out_size_pool = lambda l_in: numpy.floor(((l_in + 2 * pool_padding - pool_dilation * (pool_size - 1) - 1)
                                                   / pool_stride) + 1)
         conv1_size = out_size_conv(input_size)
-
         pool1_size = out_size_pool(conv1_size)
         conv2_size = out_size_conv(pool1_size)
         pool2_size = out_size_pool(conv2_size)
@@ -22,6 +21,7 @@ class CONV_FC(nn.Module):
             nn.Conv1d(conv_factor**0, conv_factor**1, kernel_size=kernel_size, padding=padding, stride=stride,
                       dilation=dilation),
             nn.ReLU(),
+            nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
             nn.Conv1d(conv_factor ** 1, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
                       dilation=dilation),
             nn.ReLU(),
