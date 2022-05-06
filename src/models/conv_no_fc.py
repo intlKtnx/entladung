@@ -50,8 +50,8 @@ if __name__ == "__main__":
     conv_factor = 2
 
     # maxpool parameters
-    pool_size = 15
-    pool_padding = 7
+    pool_size = 3
+    pool_padding = 1
     pool_stride = pool_size
     pool_dilation = 1
 
@@ -85,4 +85,4 @@ if __name__ == "__main__":
     })
 
     metrics.to_csv(
-        f"{save_dir}conv_without_fc_15pool_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
+        f"{save_dir}conv_without_fc_3pool_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")

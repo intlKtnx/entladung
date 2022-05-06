@@ -37,7 +37,7 @@ if __name__ == "__main__":
     input_size = 20
     sequence_length = 1000
 
-    hidden_size = 128
+    hidden_size = 512
     num_layers = 1
     epochs = 100
 
