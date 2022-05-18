@@ -3,8 +3,6 @@ import torch.nn as nn
 import numpy
 import sys
 from datetime import datetime
-from torchscan import summary, crawl_module
-from torchstat import stat
 
 class CONV_FC(nn.Module):
     def __init__(self):
