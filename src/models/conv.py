@@ -3,7 +3,8 @@ import torch.nn as nn
 import numpy
 import sys
 from datetime import datetime
-
+from torchscan import summary, crawl_module
+from torchstat import stat
 
 class CONV_FC(nn.Module):
     def __init__(self):
@@ -22,10 +23,10 @@ class CONV_FC(nn.Module):
                       dilation=dilation),
             nn.ReLU(),
             nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
-            nn.Conv1d(conv_factor ** 1, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
-                      dilation=dilation),
-            nn.ReLU(),
-            nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
+            #nn.Conv1d(conv_factor ** 1, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
+            #          dilation=dilation),
+            #nn.ReLU(),
+            #nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
             nn.Flatten(),
             nn.Linear(int(pool2_size * conv_factor**2), 4),
             nn.Softmax(dim=1),
@@ -33,6 +34,7 @@ class CONV_FC(nn.Module):
         )
 
     def forward(self, x):
+        # print(x.shape)
         x = self.model(x)
         return x
 
@@ -55,7 +57,7 @@ if __name__ == "__main__":
     conv_factor = 2
 
     # maxpool parameters
-    pool_size = 3
+    pool_size = 31
     pool_padding = 1
     pool_stride = pool_size
     pool_dilation = 1
@@ -63,7 +65,8 @@ if __name__ == "__main__":
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     logging.info('Using {} device'.format(device))
 
-    # print_model_params(Network, device)
+    # summary(CONV_FC(), (1, 20002))
+
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
         wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
         seed_loop(CONV_FC, device, CustomDataset(data_path, pattern), epochs, number_of_seeds)
