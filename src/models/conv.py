@@ -3,7 +3,7 @@ import torch.nn as nn
 import numpy
 import sys
 from datetime import datetime
-
+from torchscan import summary
 class CONV_FC(nn.Module):
     def __init__(self):
         super(CONV_FC, self).__init__()
@@ -21,12 +21,12 @@ class CONV_FC(nn.Module):
                       dilation=dilation),
             nn.ReLU(),
             nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
-            #nn.Conv1d(conv_factor ** 1, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
-            #          dilation=dilation),
-            #nn.ReLU(),
-            #nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
+            nn.Conv1d(conv_factor ** 1, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
+                      dilation=dilation),
+            nn.ReLU(),
+            nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
             nn.Flatten(),
-            nn.Linear(int(pool1_size * conv_factor**1), 4),
+            nn.Linear(int(pool2_size * conv_factor**2), 4),
             nn.Softmax(dim=1),
             # fc -> convlayer + maxpool -> poolsize& stride drastisch erhöht -> conv stride erhöht
         )
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     logging.info('Using {} device'.format(device))
 
-    # summary(CONV_FC(), (1, 20002))
+    summary(CONV_FC(), (1, 20002))
 
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
         wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
