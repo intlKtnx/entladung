@@ -22,12 +22,12 @@ class CONV_FC(nn.Module):
                       dilation=dilation),
             nn.ReLU(),
             nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
-            nn.Conv1d(conv_factor ** 1, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
-                      dilation=dilation),
-            nn.ReLU(),
-            nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
+            # nn.Conv1d(conv_factor ** 1, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
+            #          dilation=dilation),
+            # nn.ReLU(),
+            # nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
             nn.Flatten(),
-            nn.Linear(int(pool2_size * conv_factor**2), 4),
+            nn.Linear(int(pool1_size * conv_factor**1), 4),
             nn.Softmax(dim=1),
             # fc -> convlayer + maxpool -> poolsize& stride drastisch erhöht -> conv stride erhöht
         )
@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
     # maxpool parameters
     pool_size = 31
-    pool_padding = 1
+    pool_padding = 0
     pool_stride = pool_size
     pool_dilation = 1
 
