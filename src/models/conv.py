@@ -3,7 +3,8 @@ import torch.nn as nn
 import numpy
 import sys
 from datetime import datetime
-from torchscan import summary
+
+
 class CONV_FC(nn.Module):
     def __init__(self):
         super(CONV_FC, self).__init__()
@@ -62,8 +63,6 @@ if __name__ == "__main__":
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     logging.info('Using {} device'.format(device))
-
-    summary(CONV_FC(), (1, 20002))
 
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
         wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
