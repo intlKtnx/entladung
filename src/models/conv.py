@@ -26,7 +26,7 @@ class CONV_FC(nn.Module):
             #nn.ReLU(),
             #nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
             nn.Flatten(),
-            nn.Linear(int(pool2_size * conv_factor**2), 4),
+            nn.Linear(int(pool1_size * conv_factor**1), 4),
             nn.Softmax(dim=1),
             # fc -> convlayer + maxpool -> poolsize& stride drastisch erhöht -> conv stride erhöht
         )
