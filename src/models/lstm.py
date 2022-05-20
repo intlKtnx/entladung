@@ -35,8 +35,8 @@ if __name__ == "__main__":
     num_classes = 4
     number_of_seeds = 20
 
-    input_size = 2000
-    sequence_length = 10
+    input_size = 5000
+    sequence_length = 4
 
     hidden_size = 64
     num_layers = 1
