@@ -2,6 +2,7 @@ from base_functions import *
 import torch.nn as nn
 import sys
 from datetime import datetime
+# import torchutils
 
 
 class RNN(nn.Module):
@@ -31,14 +32,15 @@ if __name__ == "__main__":
 
     # Setting Hyperparameters
     num_classes = 4
-    input_size = 20
-    sequence_length = 1000
+    input_size = 2000
+    sequence_length = 10
     number_of_seeds = 20
 
-    hidden_size = 512
+    hidden_size = 64
     num_layers = 1
     epochs = 100
 
+    # torchutils.get_model_summary(RNN(), torch.rand(1, sequence_length, input_size))
 
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
     wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
