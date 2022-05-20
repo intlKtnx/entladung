@@ -2,6 +2,7 @@ from base_functions import *
 import torch.nn as nn
 import sys
 from datetime import datetime
+# import torchutils as tu
 
 
 class LSTM(nn.Module):
@@ -15,8 +16,8 @@ class LSTM(nn.Module):
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
-        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)#.to(device)
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)#.to(device)
 
         out, _ = self.lstm(x, (h0, c0))
 
@@ -34,14 +35,15 @@ if __name__ == "__main__":
     num_classes = 4
     number_of_seeds = 20
 
-    input_size = 20
-    sequence_length = 1000
+    input_size = 2000
+    sequence_length = 10
 
-    hidden_size = 512
+    hidden_size = 64
     num_layers = 1
     epochs = 100
 
-    # print_model_params(Network, device)
+    # tu.get_model_summary(LSTM(), torch.rand(10, 2000))
+
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
     wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
         seed_loop(LSTM, device, CustomDataset(data_path, pattern, rnn=True), epochs, number_of_seeds, rnn=True, sequence_length=sequence_length, input_size=input_size)
@@ -65,5 +67,5 @@ if __name__ == "__main__":
     })
 
     metrics.to_csv(
-        f"{save_dir}lstm_128{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
+        f"{save_dir}lstm_input2000{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
 
