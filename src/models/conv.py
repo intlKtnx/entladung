@@ -3,6 +3,7 @@ import torch.nn as nn
 import numpy
 import sys
 from datetime import datetime
+# import torchutils
 
 
 class CONV_FC(nn.Module):
@@ -22,12 +23,12 @@ class CONV_FC(nn.Module):
                       dilation=dilation),
             nn.ReLU(),
             nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
-            # nn.Conv1d(conv_factor ** 1, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
-            #          dilation=dilation),
-            # nn.ReLU(),
-            # nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
+            nn.Conv1d(conv_factor ** 1, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
+                       dilation=dilation),
+            nn.ReLU(),
+            nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
             nn.Flatten(),
-            nn.Linear(int(pool1_size * conv_factor**1), 4),
+            nn.Linear(int(pool2_size * conv_factor**2), 4),
             nn.Softmax(dim=1),
             # fc -> convlayer + maxpool -> poolsize& stride drastisch erhöht -> conv stride erhöht
         )
@@ -57,12 +58,14 @@ if __name__ == "__main__":
 
     # maxpool parameters
     pool_size = 31
-    pool_padding = 0
+    pool_padding = 1
     pool_stride = pool_size
     pool_dilation = 1
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     logging.info('Using {} device'.format(device))
+
+    # torchutils.get_model_summary(CONV_FC(), torch.rand(1, 1, 20002))
 
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
         wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
@@ -89,4 +92,4 @@ if __name__ == "__main__":
     })
 
     metrics.to_csv(
-        f"{save_dir}conv_fc_3pool_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
+        f"{save_dir}conv_fc_normalized{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")

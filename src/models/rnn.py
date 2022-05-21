@@ -2,7 +2,7 @@ from base_functions import *
 import torch.nn as nn
 import sys
 from datetime import datetime
-# import torchutils
+import torchutils
 
 
 class RNN(nn.Module):
@@ -16,7 +16,7 @@ class RNN(nn.Module):
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)#.to(device)
 
         out, _ = self.rnn(x, h0)
 
@@ -32,15 +32,15 @@ if __name__ == "__main__":
 
     # Setting Hyperparameters
     num_classes = 4
-    input_size = 5000
-    sequence_length = 4
+    input_size = 200
+    sequence_length = 100
     number_of_seeds = 20
 
     hidden_size = 64
     num_layers = 1
     epochs = 100
 
-    # torchutils.get_model_summary(RNN(), torch.rand(1, sequence_length, input_size))
+    torchutils.get_model_summary(RNN(), torch.rand(1, sequence_length, input_size))
 
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
     wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
@@ -65,5 +65,5 @@ if __name__ == "__main__":
     })
 
     metrics.to_csv(
-        f"{save_dir}rnn_128{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
+        f"{save_dir}rnn_normalized{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
 

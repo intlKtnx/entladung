@@ -3,8 +3,7 @@ import torch.nn as nn
 import numpy
 import sys
 from datetime import datetime
-# from torchscan import summary
-
+# import torchutils as tu
 
 class CONV_NO_FC(nn.Module):
     def __init__(self):
@@ -56,9 +55,8 @@ if __name__ == "__main__":
     pool_stride = pool_size
     pool_dilation = 1
 
-    # summary(CONV_NO_FC(), (1, 20002))
-
-
+    # tu.get_model_summary(CONV_NO_FC(), torch.rand(1, 1, 20002))
+    # print(tu.get_model_flops(CONV_NO_FC(), torch.rand(1, 1, 20002)))
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
         wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
         seed_loop(CONV_NO_FC, device, CustomDataset(data_path, pattern), epochs, number_of_seeds)
@@ -89,4 +87,4 @@ if __name__ == "__main__":
     })
 
     metrics.to_csv(
-        f"{save_dir}conv_without_fc_3pool_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
+        f"{save_dir}conv_without_fc_normalized{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
