@@ -2,7 +2,7 @@ from base_functions import *
 import torch.nn as nn
 import sys
 from datetime import datetime
-import torchutils as tu
+# import torchutils as tu
 
 
 class LSTM(nn.Module):
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     num_layers = 1
     epochs = 100
 
-    tu.get_model_summary(LSTM(), torch.rand(1, 4, 5000))
+    # tu.get_model_summary(LSTM(), torch.rand(1, 4, 5000))
 
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
     wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
