@@ -15,11 +15,11 @@ class CONV_NO_FC(nn.Module):
                                                   / pool_stride) + 1)
         conv1_size = out_size_conv(input_size)
         self.model = nn.Sequential(
-            nn.Conv1d(conv_factor**0, conv_factor ** 3, kernel_size=kernel_size, padding=padding, stride=stride,
+            nn.Conv1d(conv_factor**0, conv_factor ** 4, kernel_size=kernel_size, padding=padding, stride=stride,
                       dilation=dilation),
             nn.ReLU(),
 
-            nn.Conv1d(conv_factor ** 3, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
+            nn.Conv1d(conv_factor ** 4, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
                       dilation=dilation),
             nn.ReLU(),
             nn.AvgPool1d(kernel_size=int(conv1_size)),
@@ -87,4 +87,4 @@ if __name__ == "__main__":
     })
 
     metrics.to_csv(
-        f"{save_dir}conv_without_fc_normalized{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
+        f"{save_dir}conv_without_fc_normalized_80channels_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S')}.csv")
