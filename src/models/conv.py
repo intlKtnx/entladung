@@ -59,7 +59,7 @@ if __name__ == "__main__":
     # maxpool parameters
     pool_size = 31
     pool_padding = 1
-    pool_stride = pool_size
+    pool_stride = int(numpy.floor(pool_size/2))
     pool_dilation = 1
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
