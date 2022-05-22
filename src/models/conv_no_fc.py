@@ -22,7 +22,7 @@ class CONV_NO_FC(nn.Module):
             nn.Conv1d(conv_factor ** 4, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
                       dilation=dilation),
             nn.ReLU(),
-            nn.AvgPool1d(kernel_size=int(conv1_size)),
+            nn.AdaptiveAvgPool1d(1),
             nn.Flatten(),
             nn.Softmax(dim=1),
         )
