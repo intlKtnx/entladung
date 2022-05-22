@@ -36,7 +36,7 @@ if __name__ == "__main__":
     sequence_length = 100
     number_of_seeds = 20
 
-    hidden_size = 64
+    hidden_size = 128
     num_layers = 1
     epochs = 100
 
