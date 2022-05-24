@@ -19,11 +19,11 @@ class CONV_FC(nn.Module):
         conv2_size = out_size_conv(pool1_size)
         pool2_size = out_size_pool(conv2_size)
         self.model = nn.Sequential(
-            nn.Conv1d(conv_factor**0, conv_factor**2, kernel_size=kernel_size, padding=padding, stride=stride,
+            nn.Conv1d(conv_factor**0, conv_factor**1, kernel_size=kernel_size, padding=padding, stride=stride,
                       dilation=dilation),
             nn.ReLU(),
             nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
-            nn.Conv1d(conv_factor ** 2, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
+            nn.Conv1d(conv_factor ** 1, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
                        dilation=dilation),
             nn.ReLU(),
             nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
@@ -57,9 +57,9 @@ if __name__ == "__main__":
     conv_factor = 2
 
     # maxpool parameters
-    pool_size = 31
+    pool_size = 51
     pool_padding = 1
-    pool_stride = int(numpy.floor(pool_size/2))
+    pool_stride = pool_size
     pool_dilation = 1
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
