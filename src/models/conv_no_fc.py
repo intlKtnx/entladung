@@ -1,3 +1,5 @@
+import torch
+
 from base_functions import *
 import torch.nn as nn
 import numpy
@@ -27,6 +29,7 @@ class CONV_NO_FC(nn.Module):
         )
 
     def forward(self, x):
+        torch.use_deterministic_algorithms(False)
         x = self.model(x)
         return x
 
