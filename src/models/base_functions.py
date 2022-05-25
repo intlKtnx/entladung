@@ -1,3 +1,5 @@
+from typing import List
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -62,6 +64,8 @@ def validation(dataloader, model, criterion, device, rnn=False, sequence_length=
         for labels, inputs in dataloader:
             labels, inputs = labels.to(device), inputs.to(device)
             if rnn:
+                sequence_length = int(inputs.shape[2] / input_size)
+                # logging.info(sequence_length)
                 inputs = inputs.reshape(-1, sequence_length, input_size).to(device)
             outputs = model(inputs)
             loss = criterion(outputs, labels)
@@ -94,6 +98,8 @@ def test(dataloader, criterion, model, epoch, device, rnn=False, sequence_length
         for labels, inputs in dataloader:
             labels, inputs = labels.to(device), inputs.to(device)
             if rnn:
+                sequence_length = int(inputs.shape[2] / input_size)
+                # logging.info(sequence_length)
                 inputs = inputs.reshape(-1, sequence_length, input_size).to(device)
             outputs = model(inputs)
             loss = criterion(outputs, labels)
@@ -122,12 +128,13 @@ def train(dataloader, optimizer, criterion, model, epoch, device, rnn=False, seq
     correct = 0
     for i, data in enumerate(dataloader, 0):
         # get the inputs; data is a list of [labels, inputs]
-
         inputs = data[1]
+        inputs = inputs.to(device)
         if rnn:
+            sequence_length = int(inputs.shape[2]/input_size)
+            # logging.info(sequence_length)
             inputs = inputs.reshape(-1, sequence_length, input_size).to(device)
         labels = data[0]
-        inputs = inputs.to(device)
         labels = labels.to(device)
         # zero the parameter gradients
         optimizer.zero_grad()
@@ -223,6 +230,8 @@ class CustomDataset(data.Dataset):
                         label = 2
                     elif gname == 'pos_spitze':
                         label = 3
+                    elif gname == 'silence':
+                        label = 4
 
                     logging.debug(group.items())
                     for dname, ds in tqdm(group.items()):
@@ -253,6 +262,23 @@ class CustomDataset(data.Dataset):
         return self.validation_data_cache
 
 
+def collate_fn_padd(batch):
+    '''
+    Padds batch of variable length
+
+    note: it converts things ToTensor manually here since the ToTensor transform
+    assume it takes in images rather than arbitrary tensors.
+    '''
+    ## get sequence lengths
+    seqs = [seq for label, seq in batch]
+    targets = torch.tensor([label for label, seq in batch])
+    lengths = [len(seq[0]) for seq in seqs]
+    maximum_length = max(lengths)
+    seqs_padded = torch.stack([torch.nn.functional.pad(seq, (0, int(maximum_length-len(seq[0]/2)))) for seq in seqs])
+    # logging.info(maximum_length)
+    # logging.info(seqs_padded.shape)
+    return targets, seqs_padded
+
 def seed_loop(Network, device, customData, epochs, seeds, rnn=False, sequence_length=0, input_size=0):
     test_loss_array = []
     test_accuracy_array = []
@@ -282,12 +308,20 @@ def seed_loop(Network, device, customData, epochs, seeds, rnn=False, sequence_le
         logging.info(total_parameters)
 
         # creating Dataloaders
-        train_dataloader = DataLoader(customData.get_train_data(), batch_size=256, shuffle=True,
-                                      worker_init_fn=seed_worker, generator=worker_generator)
-        test_dataloader = DataLoader(customData.get_test_data(), batch_size=64, shuffle=True,
-                                     worker_init_fn=seed_worker, generator=worker_generator)
-        validation_dataloader = DataLoader(customData.get_validation_data(), batch_size=64, shuffle=True,
-                                           worker_init_fn=seed_worker, generator=worker_generator)
+        if rnn:
+            train_dataloader = DataLoader(customData.get_train_data(), batch_size=256, shuffle=True,
+                                          worker_init_fn=seed_worker, generator=worker_generator, collate_fn=collate_fn_padd)
+            test_dataloader = DataLoader(customData.get_test_data(), batch_size=64, shuffle=True,
+                                         worker_init_fn=seed_worker, generator=worker_generator, collate_fn=collate_fn_padd)
+            validation_dataloader = DataLoader(customData.get_validation_data(), batch_size=64, shuffle=True,
+                                               worker_init_fn=seed_worker, generator=worker_generator, collate_fn=collate_fn_padd)
+        else:
+            train_dataloader = DataLoader(customData.get_train_data(), batch_size=256, shuffle=True,
+                                          worker_init_fn=seed_worker, generator=worker_generator)
+            test_dataloader = DataLoader(customData.get_test_data(), batch_size=64, shuffle=True,
+                                         worker_init_fn=seed_worker, generator=worker_generator)
+            validation_dataloader = DataLoader(customData.get_validation_data(), batch_size=64, shuffle=True,
+                                               worker_init_fn=seed_worker, generator=worker_generator)
 
 
         # training the network
@@ -317,9 +351,9 @@ def seed_loop(Network, device, customData, epochs, seeds, rnn=False, sequence_le
 
 
 def path_init(args):
-    save_dir = "/home/marcus/Dokumente/entladung/csv_results/to_analyze"
+    save_dir = "/home/marcus/Dokumente/entladung/csv_results/to_analyze/"
     data_path = "/home/marcus/Dokumente/entladung/modified_data"
-    pattern = 'normalized_data.h5'
+    pattern = 'trimmed_data.h5'
 
     if len(args) > 2:
         data_path = args[1]
