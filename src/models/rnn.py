@@ -16,7 +16,7 @@ class RNN(nn.Module):
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)#.to(device)
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
 
         out, _ = self.rnn(x, h0)
 
