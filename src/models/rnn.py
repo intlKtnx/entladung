@@ -32,8 +32,8 @@ if __name__ == "__main__":
 
     # Setting Hyperparameters
     num_classes = 5
-    input_size = 2000
-    sequence_length = 10
+    input_size = 200
+    sequence_length = 100
     number_of_seeds = 20
 
     hidden_size = 64
