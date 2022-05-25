@@ -28,7 +28,7 @@ class CONV_FC(nn.Module):
             nn.ReLU(),
             nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
             nn.Flatten(),
-            nn.Linear(int(pool2_size * conv_factor**2), 4),
+            nn.Linear(int(pool2_size * conv_factor**2), 5),
             nn.Softmax(dim=1),
             # fc -> convlayer + maxpool -> poolsize& stride drastisch erhöht -> conv stride erhöht
         )
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     # Setting Hyperparameters
     epochs = 100
     input_size = 20002
-    number_of_seeds = 20
+    number_of_seeds = 1
 
     # conv paramters
     kernel_size = 3
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     conv_factor = 2
 
     # maxpool parameters
-    pool_size = 51
+    pool_size = 31
     pool_padding = 1
     pool_stride = pool_size
     pool_dilation = 1
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
         wrong_predictions, right_predictions, validation_accuracy, validation_loss = \
         seed_loop(CONV_FC, device, CustomDataset(data_path, pattern), epochs, number_of_seeds)
-
+    print(validation_loss)
     metrics = pandas.DataFrame({
         'parameters': total_params(CONV_FC().to(device)),
         'epochs': epochs,

@@ -16,8 +16,8 @@ class LSTM(nn.Module):
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
-        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)#.to(device)
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)#.to(device)
 
         out, _ = self.lstm(x, (h0, c0))
 
@@ -32,17 +32,17 @@ if __name__ == "__main__":
     device = device_init()
 
     # Setting Hyperparameters
-    num_classes = 4
+    num_classes = 5
     number_of_seeds = 20
 
     input_size = 200
     sequence_length = 100
 
-    hidden_size = 128
+    hidden_size = 64
     num_layers = 1
     epochs = 100
 
-    # tu.get_model_summary(LSTM(), torch.rand(1, 4, 5000))
+    # tu.get_model_summary(LSTM(), torch.rand(1, sequence_length, input_size))
 
     test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, \
     wrong_predictions, right_predictions, validation_accuracy, validation_loss = \

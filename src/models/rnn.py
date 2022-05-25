@@ -16,7 +16,7 @@ class RNN(nn.Module):
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)#.to(device)
 
         out, _ = self.rnn(x, h0)
 
@@ -31,12 +31,12 @@ if __name__ == "__main__":
     device = device_init()
 
     # Setting Hyperparameters
-    num_classes = 4
-    input_size = 200
-    sequence_length = 100
+    num_classes = 5
+    input_size = 2000
+    sequence_length = 10
     number_of_seeds = 20
 
-    hidden_size = 128
+    hidden_size = 64
     num_layers = 1
     epochs = 100
 

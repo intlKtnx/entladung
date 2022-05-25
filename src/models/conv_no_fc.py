@@ -15,12 +15,11 @@ class CONV_NO_FC(nn.Module):
                                                   / pool_stride) + 1)
         conv1_size = out_size_conv(input_size)
         self.model = nn.Sequential(
-            nn.Conv1d(conv_factor**0, conv_factor ** 4, kernel_size=kernel_size, padding=padding, stride=stride,
+            nn.Conv1d(conv_factor**0, conv_factor ** 3, kernel_size=kernel_size, padding=padding, stride=stride,
                       dilation=dilation),
             nn.ReLU(),
-            nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
-            nn.Conv1d(conv_factor ** 4, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
-                      dilation=dilation),
+            nn.Conv1d(conv_factor ** 3, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
+                       dilation=dilation),
             nn.ReLU(),
             nn.AdaptiveAvgPool1d(1),
             nn.Flatten(),
@@ -52,7 +51,7 @@ if __name__ == "__main__":
     # maxpool parameters
     pool_size = 31
     pool_padding = 1
-    pool_stride = int(numpy.floor(pool_size/2))
+    pool_stride = pool_size
     pool_dilation = 1
 
     # tu.get_model_summary(CONV_NO_FC(), torch.rand(1, 1, 20002))
