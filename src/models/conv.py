@@ -47,7 +47,7 @@ if __name__ == "__main__":
     # Setting Hyperparameters
     epochs = 100
     input_size = 20002
-    number_of_seeds = 1
+    number_of_seeds = 20
 
     # conv paramters
     kernel_size = 3
