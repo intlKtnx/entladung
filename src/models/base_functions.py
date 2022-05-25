@@ -308,21 +308,12 @@ def seed_loop(Network, device, customData, epochs, seeds, rnn=False, sequence_le
         logging.info(total_parameters)
 
         # creating Dataloaders
-        if rnn:
-            train_dataloader = DataLoader(customData.get_train_data(), batch_size=256, shuffle=True,
-                                          worker_init_fn=seed_worker, generator=worker_generator, collate_fn=collate_fn_padd)
-            test_dataloader = DataLoader(customData.get_test_data(), batch_size=64, shuffle=True,
-                                         worker_init_fn=seed_worker, generator=worker_generator, collate_fn=collate_fn_padd)
-            validation_dataloader = DataLoader(customData.get_validation_data(), batch_size=64, shuffle=True,
-                                               worker_init_fn=seed_worker, generator=worker_generator, collate_fn=collate_fn_padd)
-        else:
-            train_dataloader = DataLoader(customData.get_train_data(), batch_size=256, shuffle=True,
-                                          worker_init_fn=seed_worker, generator=worker_generator)
-            test_dataloader = DataLoader(customData.get_test_data(), batch_size=64, shuffle=True,
-                                         worker_init_fn=seed_worker, generator=worker_generator)
-            validation_dataloader = DataLoader(customData.get_validation_data(), batch_size=64, shuffle=True,
-                                               worker_init_fn=seed_worker, generator=worker_generator)
-
+        train_dataloader = DataLoader(customData.get_train_data(), batch_size=256, shuffle=True,
+                                      worker_init_fn=seed_worker, generator=worker_generator, collate_fn=collate_fn_padd)
+        test_dataloader = DataLoader(customData.get_test_data(), batch_size=64, shuffle=True,
+                                     worker_init_fn=seed_worker, generator=worker_generator, collate_fn=collate_fn_padd)
+        validation_dataloader = DataLoader(customData.get_validation_data(), batch_size=64, shuffle=True,
+                                           worker_init_fn=seed_worker, generator=worker_generator, collate_fn=collate_fn_padd)
 
         # training the network
         test_loss, test_accuracy, train_loss, train_accuracy, confusion_matrix_raw, confusion_matrix_normalized, wrong_predictions, right_predictions \
