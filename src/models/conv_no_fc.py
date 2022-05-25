@@ -29,7 +29,6 @@ class CONV_NO_FC(nn.Module):
         )
 
     def forward(self, x):
-        torch.use_deterministic_algorithms(False)
         x = self.model(x)
         return x
 

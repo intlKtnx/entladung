@@ -1,3 +1,5 @@
+import torch
+
 from base_functions import *
 import torch.nn as nn
 import numpy
@@ -22,6 +24,7 @@ class CONV_FC(nn.Module):
             nn.Conv1d(conv_factor**0, conv_factor**1, kernel_size=kernel_size, padding=padding, stride=stride,
                       dilation=dilation),
             nn.ReLU(),
+
             nn.AdaptiveMaxPool1d(800),
             # nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
             nn.Conv1d(conv_factor ** 1, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
@@ -35,7 +38,7 @@ class CONV_FC(nn.Module):
         )
 
     def forward(self, x):
-        # print(x.shape)
+        torch.use_deterministic_algorithms(False)
         x = self.model(x)
         return x
 
