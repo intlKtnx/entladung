@@ -16,7 +16,7 @@ class CONV_FC(nn.Module):
                                                   / pool_stride) + 1)
         conv1_size = out_size_conv(input_size)
         pool1_size = out_size_pool(conv1_size)
-        conv2_size = out_size_conv(pool1_size)
+        conv2_size = out_size_conv(800)
         pool2_size = out_size_pool(conv2_size)
         self.model = nn.Sequential(
             nn.Conv1d(conv_factor**0, conv_factor**1, kernel_size=kernel_size, padding=padding, stride=stride,
@@ -29,7 +29,7 @@ class CONV_FC(nn.Module):
             nn.ReLU(),
             nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
             nn.Flatten(),
-            nn.Linear(int(pool2_size * conv_factor**2), 5),
+            nn.Linear(int(pool2_size * conv_factor**2), 4),
             nn.Softmax(dim=1),
             # fc -> convlayer + maxpool -> poolsize& stride drastisch erhöht -> conv stride erhöht
         )

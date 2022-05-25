@@ -32,7 +32,7 @@ if __name__ == "__main__":
     device = device_init()
 
     # Setting Hyperparameters
-    num_classes = 5
+    num_classes = 4
     number_of_seeds = 20
 
     input_size = 200
