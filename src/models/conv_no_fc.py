@@ -20,7 +20,7 @@ class CONV_NO_FC(nn.Module):
             nn.Conv1d(conv_factor**0, conv_factor ** 3, kernel_size=kernel_size, padding=padding, stride=stride,
                       dilation=dilation),
             nn.ReLU(),
-            nn.Conv1d(conv_factor ** 3, 5, kernel_size=kernel_size, padding=padding, stride=stride,
+            nn.Conv1d(conv_factor ** 3, 4, kernel_size=kernel_size, padding=padding, stride=stride,
                        dilation=dilation),
             nn.ReLU(),
             nn.AdaptiveAvgPool1d(1),

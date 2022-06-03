@@ -18,15 +18,15 @@ class CONV_FC(nn.Module):
                                                   / pool_stride) + 1)
         conv1_size = out_size_conv(input_size)
         pool1_size = out_size_pool(conv1_size)
-        conv2_size = out_size_conv(800)
+        conv2_size = out_size_conv(pool1_size)
         pool2_size = out_size_pool(conv2_size)
         self.model = nn.Sequential(
             nn.Conv1d(conv_factor**0, conv_factor**1, kernel_size=kernel_size, padding=padding, stride=stride,
                       dilation=dilation),
             nn.ReLU(),
 
-            nn.AdaptiveMaxPool1d(800),
-            # nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
+            ## nn.AdaptiveMaxPool1d(800),
+            nn.MaxPool1d(kernel_size=pool_size, stride=pool_stride, padding=pool_padding),
             nn.Conv1d(conv_factor ** 1, conv_factor ** 2, kernel_size=kernel_size, padding=padding, stride=stride,
                        dilation=dilation),
             nn.ReLU(),
@@ -38,7 +38,7 @@ class CONV_FC(nn.Module):
         )
 
     def forward(self, x):
-        torch.use_deterministic_algorithms(False)
+        # torch.use_deterministic_algorithms(False)
         x = self.model(x)
         return x
 
